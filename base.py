@@ -1,34 +1,83 @@
 import pygame
+from entities import Player, Entity
+from blocks import Block
 
 
-class Sprite(object):
-    def __init__(self, scene, coords=(0, 0), tangible=False, visible=True):
-        self.parent = scene
-        self.coords = coords
-        self.scene = pygame.Surface(scene.get_size())
-        self.tangible = tangible
-        self.visible = visible
-        self.set_pos(*self.coords)
-
-    def set_pos(self, x: float, y: float):
-        self.scene.fill(pygame.Color("black"))
-        self.coords = (x, y)
-        if self.visible:
-            pygame.draw.circle(self.scene, (0, 100, 0), self.coords, 20)
-        self.parent.blit(self.scene, (0, 0))
-
-    def get_pos(self):
-        return self.coords
+def iterable(obj):
+    return isinstance(obj, list) or isinstance(obj, tuple)
 
 
 class ScenesManager(object):
-    def __init__(self, current, *args, **kwargs):
+    def __init__(self, size=(800, 600), *args, **kwargs):
+        pygame.init()
+        self.size = self.width, self.height = size[0], size[1]
+        self.clock = pygame.time.Clock()
         self.indexed_scenes = list(args)
         self.main_scenes = dict(kwargs)
-        self.current = current
+        self.main = pygame.display.set_mode(size, pygame.RESIZABLE)
+        self.current = None
+        self.main.fill((0, 0, 0))
+        pygame.display.set_caption('TEST')
 
     def set_scene(self, scene):
         pass
 
     def get_scene(self):
         return self.current
+
+    def show(self, event):
+        self.size = self.width, self.height = self.main.get_size()
+        if self.current is not None:
+            self.current.update(event)
+            self.main.blit(self.current.scene, (0, 0))
+        elif self.indexed_scenes:
+            self.current = self.indexed_scenes[0]
+        pygame.display.flip()
+
+    def add_scene(self, *args, **kwargs):
+        self.indexed_scenes += list(args)
+        # self.main_scenes += dict(kwargs)
+
+
+class Scene(object):
+    def __init__(self, manager: ScenesManager, objects=(), *args):
+        self.scene = pygame.Surface(manager.size)
+        self.manager = manager
+        if not iterable(objects):
+            objects = (objects,)
+        self.objects = {'player': None, 'stative': set(), 'entities': set(), 'others': set()}
+        self.coords = (0, 0)
+        for obj in list(objects) + list(args):
+            obj.parent = self
+            if isinstance(obj, Player):
+                self.objects['player'] = obj
+                self.coords = obj.coords
+            elif obj.tangible:
+                self.objects['stative'].add(obj)
+            elif isinstance(obj, Entity):
+                self.objects['entities'].add(obj)
+            else:
+                self.objects['others'].add(obj)
+
+    def add_objects(self, *args):
+        self.objects += list(args)
+
+    def update(self, event):
+        self.scene.fill(pygame.Color('black'))
+        self.scene = pygame.transform.scale(self.scene, self.manager.size)
+        for obj in self.objects['others']:
+            coords = obj.coords[0] - self.coords[0] + self.manager.width // 2, obj.coords[1] - self.coords[
+                1] + self.manager.height // 2
+            self.scene.blit(obj.sprite, coords)
+        for obj in self.objects['stative']:
+            coords = obj.coords[0] - self.coords[0] + self.manager.width // 2, obj.coords[1] - self.coords[
+                1] + self.manager.height // 2
+            self.scene.blit(obj.sprite, coords)
+        for obj in self.objects['entities']:
+            obj.update(event)
+            coords = obj.coords[0] - self.coords[0] + self.manager.width // 2, obj.coords[1] - self.coords[
+                1] + self.manager.height // 2
+            self.scene.blit(obj.sprite, coords)
+        self.objects['player'].update(event)
+        self.coords = self.objects['player'].coords
+        self.scene.blit(self.objects['player'].sprite, (self.manager.width // 2, self.manager.height // 2))

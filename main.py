@@ -1,29 +1,26 @@
-import pygame
-from entities import Player
+import pygame, random
+from entities import Player, NPC, Enemy
+from base import ScenesManager, Scene
+from blocks import Block
 
 FPS = 60
 
 
-def init():
-    global screen, width, height
-    pygame.init()
-    size = width, height = 800, 600
-    screen = pygame.display.set_mode(size)
-    screen.fill((0, 0, 0))
-    pygame.display.set_caption('TEST')
-
-
 if __name__ == '__main__':
+    manager = ScenesManager()
     screen, running = None, True
-    init()
-    clock = pygame.time.Clock()
-    player = Player(screen, (50, 50))
+    player = Player((50, 50))
+    ents = [NPC('npc', (random.randint(0, 1000), random.randint(0, 1000))) for _ in range(10)]
+    blcks = [Block('block', (random.randint(0, 1000), random.randint(0, 1000)))for _ in range(10)]
+    enms = [Enemy('enemy', (random.randint(0, 1000), random.randint(0, 1000))) for _ in range(5)]
+    scene = Scene(manager, ents + blcks + enms, player)
+    manager.add_scene(scene)
     while running:
-        player.walking()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            player.event_check(event)
-        pygame.display.flip()
-        clock.tick(FPS)
+            manager.show(event)
+            manager.clock.tick(FPS)
+        manager.show(None)
+        manager.clock.tick(FPS)
     pygame.quit()
