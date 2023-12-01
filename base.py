@@ -1,6 +1,7 @@
 import pygame
 from entities import Player, Entity
 from blocks import Block
+from ui import PlayerUI
 
 
 def iterable(obj):
@@ -58,6 +59,8 @@ class Scene(object):
                 self.objects['entities'].add(obj)
             else:
                 self.objects['others'].add(obj)
+        self.ui = PlayerUI(self.objects['player'])
+        self.ui.set_parent(self)
 
     def add_objects(self, *args):
         self.objects += list(args)
@@ -80,4 +83,5 @@ class Scene(object):
             self.scene.blit(obj.sprite, coords)
         self.objects['player'].update(event)
         self.coords = self.objects['player'].coords
+        self.ui.update()
         self.scene.blit(self.objects['player'].sprite, (self.manager.width // 2, self.manager.height // 2))

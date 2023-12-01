@@ -9,7 +9,7 @@ FPS = 60
 if __name__ == '__main__':
     manager = ScenesManager()
     screen, running = None, True
-    player = Player((50, 50))
+    player = Player((0, 0))
     ents = [NPC('npc', (random.randint(0, 1000), random.randint(0, 1000))) for _ in range(10)]
     blcks = [Block('block', (random.randint(0, 1000), random.randint(0, 1000)))for _ in range(10)]
     enms = [Enemy('enemy', (random.randint(0, 1000), random.randint(0, 1000))) for _ in range(5)]

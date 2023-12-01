@@ -1,4 +1,5 @@
 from random import randint
+from datetime import datetime as dt
 
 
 def stay(this, event):

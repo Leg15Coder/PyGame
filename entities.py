@@ -1,6 +1,7 @@
 import pygame
-from behaviors import stay, random, to_player
+from behaviors import stay, random, to_player, dist
 from datetime import datetime as dt
+from datetime import timedelta
 
 
 class Sprite(object):
@@ -52,7 +53,11 @@ class Entity(Sprite):
         self.abilities = dict(kwargs)
         self.target = None
         self.speed = self.abilities['speed'] if 'speed' in self.abilities else 2
-        self.health = self.abilities['health'] if 'health' in self.abilities else 2
+        self.health = self.abilities['health'] if 'health' in self.abilities else 100
+        self.damage = self.abilities['damage'] if 'damage' in self.abilities else 1
+        cd = self.abilities['cooldown_attack'] if 'cooldown_attack' in self.abilities else 1
+        self.cooldown_attack = timedelta(seconds=cd)
+        self.current_cooldown_attack = dt.now()
 
     def check_move(self, coords: tuple):
         if self.parent is not None:
@@ -92,6 +97,12 @@ class Entity(Sprite):
         else:
             self.target = None
             self.state = 'stay'
+
+    def update(self, event):
+        super().update(event)
+        if self.health <= 0:
+            del self
+            print('death')
 
 
 class Player(Entity):
@@ -134,6 +145,7 @@ class Player(Entity):
 
     def update(self, event):
         super().update(event)
+        # print('player health', self.health, 'hp')
         self.event_check(event)
         self.walking()
         if self.state == 'stay':
@@ -146,15 +158,17 @@ class Enemy(Entity):
     def __init__(self, name, coords=(0, 0), visible=True, **kwargs):
         super().__init__(name, coords, visible, **kwargs)
         self.behaviour = to_player
-        self.damage = 2
 
     def attack(self, target: Entity):
         target.health -= self.damage
 
     def update(self, event):
         super().update(event)
-        if dt.now().microsecond // 1000 % 1000 > 600:
-            self.behaviour(self, event)
+        if dt.now() - self.cooldown_attack > self.current_cooldown_attack \
+                and dist(self.coords, self.parent.objects['player'].coords) <= 32:
+            self.current_cooldown_attack = dt.now()
+            self.attack(self.parent.objects['player'])
+        self.behaviour(self, event)
         self.goto()
 
 
