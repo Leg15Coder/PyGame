@@ -9,11 +9,11 @@ FPS = 60
 if __name__ == '__main__':
     manager = ScenesManager()
     screen, running = None, True
-    player = Player((0, 0))
     ents = [NPC('npc', (random.randint(0, 1000), random.randint(0, 1000))) for _ in range(10)]
     blcks = [Block('block', (random.randint(0, 1000), random.randint(0, 1000)))for _ in range(10)]
-    enms = [Enemy('enemy', (random.randint(0, 1000), random.randint(0, 1000))) for _ in range(5)]
-    scene = Scene(manager, ents + blcks + enms, player)
+    enms = [Enemy('enemy', (random.randint(0, 1000), random.randint(0, 1000)), damage=10) for _ in range(5)]
+    scene = Scene(manager, ents + blcks + enms, Player((0, 0)))
+    del ents, blcks, enms
     manager.add_scene(scene)
     while running:
         for event in pygame.event.get():

@@ -20,11 +20,11 @@ class Wall(Block):
         x1, y1, x2, y2 = coords
         dx, dy = x2 - x1, y2 - y1
         if dx >= 0 and dy >= 0:
-            self.collision = ((x1, y1 + dy), (x2, y2 - dy))
+            self.collision = ((x1, y1), (x2, y2))
         elif dx < 0 and dy >= 0:
             self.collision = ((x2, y2), (x1, y1))
         elif dx >= 0 and dy < 0:
-            self.collision = ((x1, y1), (x2, y2))
+            self.collision = ((x1, y1 + dy), (x2, y2 - dy))
         else:
             self.collision = ((x1 - dx, y1), (x2 + dx, y2))
         super().__init__(name, self.collision[0], False, visible)

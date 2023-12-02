@@ -1,5 +1,5 @@
 import pygame
-from behaviors import stay, random, to_player, dist
+from behaviors import stay, random, to_player, dist, die, attack
 from datetime import datetime as dt
 from datetime import timedelta
 
@@ -24,6 +24,16 @@ class Sprite(object):
         self.tangible = tangible
         self.visible = visible
         self.parent = None
+
+    def __del__(self):
+        if self.parent is not None:
+            for name in self.parent.objects:
+                if not isinstance(self.parent.objects[name], Player):
+                    for e in self.parent.objects[name]:
+                        if e is self:
+                            del e
+                else:
+                    del self.parent[name]
 
     def set_pos(self, x: float, y: float):
         """
@@ -55,6 +65,7 @@ class Entity(Sprite):
         self.speed = self.abilities['speed'] if 'speed' in self.abilities else 2
         self.health = self.abilities['health'] if 'health' in self.abilities else 100
         self.damage = self.abilities['damage'] if 'damage' in self.abilities else 1
+        self.death = self.abilities['death'] if 'death' in self.abilities else die
         cd = self.abilities['cooldown_attack'] if 'cooldown_attack' in self.abilities else 1
         self.cooldown_attack = timedelta(seconds=cd)
         self.current_cooldown_attack = dt.now()
@@ -84,6 +95,11 @@ class Entity(Sprite):
                 coords = (coords[0], coords[1] - min(self.speed, self.coords[1] - y))
             elif y > self.coords[1]:
                 coords = (coords[0], coords[1] + min(self.speed, y - self.coords[1]))
+            if self.check_move(coords):
+                self.coords = coords
+                self.set_pos(*self.coords)
+            else:
+                coords = self.coords
             if x > self.coords[0]:
                 coords = (coords[0] + min(self.speed, x - self.coords[0]), coords[1])
             elif x < self.coords[0]:
@@ -101,8 +117,7 @@ class Entity(Sprite):
     def update(self, event):
         super().update(event)
         if self.health <= 0:
-            del self
-            print('death')
+            self.death(self, event)
 
 
 class Player(Entity):
@@ -145,7 +160,6 @@ class Player(Entity):
 
     def update(self, event):
         super().update(event)
-        # print('player health', self.health, 'hp')
         self.event_check(event)
         self.walking()
         if self.state == 'stay':
@@ -158,16 +172,11 @@ class Enemy(Entity):
     def __init__(self, name, coords=(0, 0), visible=True, **kwargs):
         super().__init__(name, coords, visible, **kwargs)
         self.behaviour = to_player
-
-    def attack(self, target: Entity):
-        target.health -= self.damage
+        self.attack = self.abilities['attack'] if 'attack' in self.abilities else attack
 
     def update(self, event):
         super().update(event)
-        if dt.now() - self.cooldown_attack > self.current_cooldown_attack \
-                and dist(self.coords, self.parent.objects['player'].coords) <= 32:
-            self.current_cooldown_attack = dt.now()
-            self.attack(self.parent.objects['player'])
+        self.attack(self, event)
         self.behaviour(self, event)
         self.goto()
 
