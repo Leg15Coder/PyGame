@@ -1,0 +1,5 @@
+annotated-types==0.6.0
+pydantic==1.10.12
+pygame==2.5.2
+python-dotenv==1.0.0
+typing_extensions==4.8.0

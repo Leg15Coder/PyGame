@@ -67,9 +67,14 @@ class Scene(object):
                 self.objects['others'].add(obj)
         self.ui = PlayerUI(self.objects['player'])
         self.ui.set_parent(self)
+        self.dialog = None
 
     def add_objects(self, *args):
         self.objects += list(args)
+
+    def start_dialog(self, dialog):
+        self.dialog = dialog
+        self.dialog.parent = self
 
     def update(self, event):
         if 'player' in self.objects and self.objects['player'] is not None:
@@ -91,12 +96,14 @@ class Scene(object):
                     coords = obj.coords[0] - self.coords[0] + self.manager.width // 2, obj.coords[1] - self.coords[
                         1] + self.manager.height // 2
                     self.scene.blit(obj.sprite, coords)
+            if self.dialog is not None:
+                self.dialog.update(event)
             self.objects['player'].update(event)
             if self.objects['player'].health <= 0:
                 del self.objects['player']
             else:
                 self.coords = self.objects['player'].coords
-                self.ui.update()
+                self.ui.update(event)
                 self.scene.blit(self.objects['player'].sprite, (self.manager.width // 2, self.manager.height // 2))
         else:
             print('GAME OVER')

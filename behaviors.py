@@ -1,12 +1,19 @@
 from random import randint
 from datetime import datetime as dt
+from ui import Dialog
 
 
 def stay(this, event):
     pass
 
 
+def dialog(this, event):
+    if 'player' in this.parent.objects and dist(this.parent.objects['player'].coords, this.coords) <= 32:
+        this.parent.start_dialog(Dialog(this.parent.manager, 1))
+
+
 def random(this, event):
+    dialog(this, event)
     this.goto(this.coords[0] + randint(-64, 64), this.coords[1] + randint(-64, 64))
 
 
@@ -49,5 +56,4 @@ def is_in_rectangle(coords: tuple, c1: tuple, c2: tuple):
         collision = ((x1, y1 + dy), (x2, y2 - dy))
     else:
         collision = ((x1 - dx, y1), (x2 + dx, y2))
-    print(collision[0][0] <= coords[0] <= collision[1][0], collision[0][1], coords[1], collision[1][1])
     return collision[0][0] <= coords[0] <= collision[1][0] and collision[0][1] <= coords[1] <= collision[1][1]

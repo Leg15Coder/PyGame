@@ -1,5 +1,5 @@
 import pygame
-from behaviors import stay, random, to_player, dist, die, attack
+from behaviors import stay, random, to_player, dist, die, attack, dialog
 from datetime import datetime as dt
 from datetime import timedelta
 
@@ -33,7 +33,7 @@ class Sprite(object):
                         if e is self:
                             del e
                 else:
-                    del self.parent[name]
+                    del self.parent.objects[name]
 
     def set_pos(self, x: float, y: float):
         """
