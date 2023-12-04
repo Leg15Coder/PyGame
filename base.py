@@ -1,7 +1,7 @@
 import pygame
 from entities import Player, Entity
 from blocks import Block
-from ui import PlayerUI, MainMenu
+from ui import PlayerUI, MainMenu, GameMenu
 
 
 def iterable(obj):
@@ -16,7 +16,8 @@ class ScenesManager(object):
         self.indexed_scenes = list(args)
         self.main_scenes = dict(kwargs)
         self.main_scenes['MainMenu'] = MainMenu(self)
-        self.start = False
+        self.main_scenes['GameMenu'] = GameMenu(self)
+        self.state = 'mainmenu'
         self.main = pygame.display.set_mode(size, pygame.RESIZABLE)
         self.current = None
         self.main.fill((0, 0, 0))
@@ -30,15 +31,21 @@ class ScenesManager(object):
 
     def show(self, event):
         self.size = self.width, self.height = self.main.get_size()
-        if self.start:
+        if event is not None and event.type == pygame.KEYDOWN:
+            if event.key == 27 and self.state == 'game':
+                self.main_scenes['GameMenu'].open()
+        if self.state == 'game':
             if self.current is not None:
                 self.current.update(event)
                 self.main.blit(self.current.scene, (0, 0))
             elif self.indexed_scenes:
                 self.current = self.indexed_scenes[0]
-        else:
+        elif self.state == 'mainmenu':
             self.main_scenes['MainMenu'].update(event)
             self.main.blit(self.main_scenes['MainMenu'].scene, (0, 0))
+        elif self.state == 'gamemenu':
+            self.main_scenes['GameMenu'].update(event)
+            self.main.blit(self.main_scenes['GameMenu'].scene, (0, 0))
         pygame.display.flip()
 
     def add_scene(self, *args, **kwargs):

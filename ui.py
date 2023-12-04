@@ -36,7 +36,11 @@ class UI(object):
             self.size = self.width, self.height = self.parent.scene.get_size()
 
 
-class MainMenu(UI):
+class Menu(UI):
+    pass
+
+
+class MainMenu(Menu):
     def __init__(self, manager):
         super().__init__(manager)
         self.scene = pygame.Surface(manager.size)
@@ -48,7 +52,7 @@ class MainMenu(UI):
         self.quit_button = font.render("ВЫЙТИ", True, (100, 255, 100))
 
     def start(self):
-        self.manager.start = True
+        self.manager.state = 'game'
 
     def settings(self):
         pass
@@ -84,6 +88,51 @@ class MainMenu(UI):
                     self.settings()
                 elif is_in_rectangle(pos, quit_button_pos, quit_hv):
                     self.quit()
+
+
+class GameMenu(Menu):
+    def __init__(self, manager):
+        super().__init__(manager)
+        self.scene = pygame.Surface(manager.size)
+        font = pygame.font.Font(None, 50)
+        self.continue_button = font.render("ВЕРНУТЬСЯ В ИГРУ", True, (100, 255, 100))
+        font = pygame.font.Font(None, 50)
+        self.menu_button = font.render("ГЛАВНОЕ МЕНЮ", True, (100, 255, 100))
+
+    def open(self):
+        self.manager.state = 'gamemenu'
+
+    def close(self):
+        self.manager.state = 'game'
+
+    def to_menu(self):
+        self.manager.state = 'mainmenu'
+
+    def update(self, event):
+        super().update(event)
+        self.scene = pygame.transform.scale(self.scene, self.manager.size)
+        self.scene.fill(pygame.Color('black'))
+        size = width, height = self.manager.size
+        continue_button_pos = (width // 3, height * 3 // 6)
+        menu_button_pos = (width // 3, height * 4 // 6)
+        wid_hei = (self.continue_button.get_width(), self.continue_button.get_height())
+        self.scene.blit(self.continue_button, continue_button_pos)
+        pygame.draw.rect(self.scene, (0, 255, 0), (*continue_button_pos, *wid_hei), 1)
+        self.scene.blit(self.menu_button, menu_button_pos)
+        pygame.draw.rect(self.scene, (0, 255, 0), (*menu_button_pos, *wid_hei), 1)
+        if event is not None:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = event.pos
+                continue_hv = (continue_button_pos[0] + wid_hei[0], continue_button_pos[1] + wid_hei[1])
+                menu_hv = (menu_button_pos[0] + wid_hei[0], menu_button_pos[1] + wid_hei[1])
+                if is_in_rectangle(pos, continue_button_pos, continue_hv):
+                    self.close()
+                elif is_in_rectangle(pos, menu_button_pos, menu_hv):
+                    self.to_menu()
+
+
+class Settings(Menu):
+    pass
 
 
 class PlayerUI(UI):
