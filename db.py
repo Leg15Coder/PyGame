@@ -15,7 +15,14 @@ class Database(object):
         res = self.cur.execute(f"SELECT * FROM dialogs WHERE id={i}").fetchone()[0]
         names = ['id', 'text', 'order', 'events', 'dialog_id', 'next_step', 'start']
         res = self.cur.execute(f"SELECT * FROM frases WHERE dialog_id={res}").fetchall()
-        return tuple({names[i]: e[i] for i in range(7)} for e in res)
+        res = tuple({names[i]: e[i] for i in range(len(names))} for e in res)
+        return res
+
+    def get_quest(self, i: int):
+        res = self.cur.execute(f"SELECT * FROM quests WHERE id={i}").fetchone()[0]
+        names = ['id', 'opinion']
+        res = ({names[i]: e[i] for i in range(len(names))} for e in res)
+        return res
 
 
 db = Database()

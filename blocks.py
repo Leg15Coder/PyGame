@@ -4,7 +4,8 @@ from behaviors import dist
 
 
 class Node(Sprite):
-    pass
+    def __init__(self, name, coords=(0, 0)):
+        super().__init__(name, coords, False, False)
 
 
 class Block(Sprite):
@@ -27,7 +28,7 @@ class Wall(Block):
             self.collision = ((x1, y1 + dy), (x2, y2 - dy))
         else:
             self.collision = ((x1 - dx, y1), (x2 + dx, y2))
-        super().__init__(name, self.collision[0], False, visible)
+        super().__init__(name, self.collision[0], True, visible)
 
     def collision_box(self, coords: tuple):
         return self.collision[0][0] <= coords[0] <= self.collision[1][0] and\
@@ -35,7 +36,9 @@ class Wall(Block):
 
 
 class Floor(Block):
-    pass
+    def __init__(self, name, coords=(0, 0, 0, 0)):
+        self.collosion = (coords[:2], coords[2:4])
+        super().__init__(name, self.collision[0], False, True)
 
 
 class Usable(Block, Node):

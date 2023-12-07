@@ -57,3 +57,13 @@ def is_in_rectangle(coords: tuple, c1: tuple, c2: tuple):
     else:
         collision = ((x1 - dx, y1), (x2 + dx, y2))
     return collision[0][0] <= coords[0] <= collision[1][0] and collision[0][1] <= coords[1] <= collision[1][1]
+
+
+
+
+def to_player_and_shoot(this, event):
+    if 'player' in this.parent.objects:
+        this.goto(*this.parent.objects['player'].coords)
+        this.shoot(*this.parent.objects['player'].coords)
+    else:
+        stay(this, event)

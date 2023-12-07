@@ -1,5 +1,5 @@
 import pygame
-from behaviors import stay, random, to_player, dist, die, attack, dialog
+from behaviors import stay, random, to_player, dist, die, attack, dialog, to_player_and_shoot
 from datetime import datetime as dt
 from datetime import timedelta
 
@@ -123,13 +123,22 @@ class Entity(Sprite):
 class Player(Entity):
     def __init__(self, coords=(0, 0), **kwargs):
         super().__init__('player', coords, True, **kwargs)
+        self.quests = set()
         self.speed = 4
-        self.events = {119: False, 115: False, 97: False, 100: False}
+        self.walk = 4
+        self.inventory = [None] * 33
+        self.run = 8
+        self.reputation = 0
+        self.events = {119: False, 115: False, 97: False, 100: False, 1073742048: False}
+
+    def get_empty_slot(self):
+        return self.inventory.index(None)
 
     def event_check(self, event):
         if event is not None:
             if event.type == pygame.KEYDOWN:
                 symb = event.key
+                print(symb)
                 self.events[symb] = True
             if event.type == pygame.KEYUP:
                 symb = event.key
@@ -154,7 +163,12 @@ class Player(Entity):
             self.coords = coords
             self.set_pos(*self.coords)
         if flag and self.parent is not None:
-            self.state = 'walking'
+            if self.events[1073742048]:
+                self.speed = self.run
+                self.state = 'running'
+            else:
+                self.speed = self.walk
+                self.state = 'walking'
         else:
             self.state = 'stay'
 
@@ -166,6 +180,8 @@ class Player(Entity):
             self.set_img(f"{1}")
         elif self.state == 'walking':
             self.set_img(f"{dt.now().microsecond // 1000 % 1000 // 334 + 1}")
+        elif self.state == 'running':
+            self.set_img(f"{dt.now().microsecond // 500 % 500 // 167 + 1}")
 
 
 class Enemy(Entity):
@@ -199,3 +215,26 @@ class NPC(Entity):
         if self.state != 'process':
             self.behaviour(self, event)
         self.goto()
+
+
+
+
+class Shooter(Entity):
+    def __init__(self, name, coords=(0, 0), visible=True, **kwargs):
+        super().__init__(name, coords, visible, **kwargs)
+        self.x_shooter_1 = coords[0]
+        self.y_shooter_1 = coords[1]
+        self.behaviour_shooter = to_player_and_shoot
+        self.attack = self.abilities['attack'] if 'attack' in self.abilities else attack
+
+    def shoot(self, x_player=None, y_player=None, x_shooter=None, y_shooter=None):
+        if x_player is not None and y_player is not None:
+            self.target_for_shooting = x_player, y_player
+            self.coords_shooter = x_shooter, y_shooter
+
+    def update(self, event):
+        super().update(event)
+        self.attack(self, event)
+        self.behaviour_shooter(self, event)
+        self.goto()
+        self.shoot(x_shooter=self.x_shooter_1, y_shooter=self.y_shooter_1)
