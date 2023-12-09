@@ -50,12 +50,12 @@ def is_in_rectangle(coords: tuple, c1: tuple, c2: tuple):
     dx, dy = x2 - x1, y2 - y1
     if dx >= 0 and dy >= 0:
         collision = ((x1, y1), (x2, y2))
-    elif dx < 0 and dy >= 0:
+    elif dx < 0 and dy < 0:
         collision = ((x2, y2), (x1, y1))
     elif dx >= 0 and dy < 0:
-        collision = ((x1, y1 + dy), (x2, y2 - dy))
+        collision = ((x1, y2), (x2, y1))
     else:
-        collision = ((x1 - dx, y1), (x2 + dx, y2))
+        collision = ((x2, y1), (x1, y2))
     return collision[0][0] <= coords[0] <= collision[1][0] and collision[0][1] <= coords[1] <= collision[1][1]
 
 

@@ -59,9 +59,13 @@ class Scene(object):
         self.manager = manager
         if not iterable(objects):
             objects = (objects,)
+        objects = list(objects) + list(args)
         self.objects = {'player': None, 'stative': set(), 'entities': set(), 'others': set()}
         self.coords = (0, 0)
-        for obj in list(objects) + list(args):
+        self.add_objects(*objects)
+
+    def add_objects(self, *args):
+        for obj in args:
             obj.parent = self
             if isinstance(obj, Player):
                 self.objects['player'] = obj
@@ -75,9 +79,6 @@ class Scene(object):
         self.ui = PlayerUI(self.objects['player'])
         self.ui.set_parent(self)
         self.dialog = None
-
-    def add_objects(self, *args):
-        self.objects += list(args)
 
     def start_dialog(self, dialog):
         self.dialog = dialog

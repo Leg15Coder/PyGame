@@ -18,9 +18,8 @@ class Sprite(object):
         :param visible: Виден ли объект на экране
         """
         self.name = name
+        self.sprite = None
         self.coords = coords
-        img = pygame.image.load(rf"sprites/{name}/1.png")
-        self.sprite = pygame.transform.scale(img, (64, 64))
         self.tangible = tangible
         self.visible = visible
         self.parent = None
@@ -59,11 +58,14 @@ class Sprite(object):
 class Entity(Sprite):
     def __init__(self, name, coords=(0, 0), visible=True, **kwargs):
         super().__init__(name, coords, False, visible, **kwargs)
+        img = pygame.image.load(rf"sprites/{name}/1.png")
+        self.sprite = pygame.transform.scale(img, (64, 64))
         self.state = 'stay'
         self.abilities = dict(kwargs)
         self.target = None
         self.speed = self.abilities['speed'] if 'speed' in self.abilities else 2
-        self.health = self.abilities['health'] if 'health' in self.abilities else 100
+        self.max_health = self.abilities['health'] if 'health' in self.abilities else 100
+        self.health = self.max_health
         self.damage = self.abilities['damage'] if 'damage' in self.abilities else 1
         self.death = self.abilities['death'] if 'death' in self.abilities else die
         cd = self.abilities['cooldown_attack'] if 'cooldown_attack' in self.abilities else 1
@@ -215,7 +217,6 @@ class NPC(Entity):
         if self.state != 'process':
             self.behaviour(self, event)
         self.goto()
-
 
 
 

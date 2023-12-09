@@ -146,7 +146,7 @@ class PlayerUI(UI):
 
     def update(self, event):
         super().update(event)
-        x = self.width * self.player.health // 250
+        x = self.width * 100 * self.player.health / 250 / self.player.max_health
         pygame.draw.rect(self.ui, (200, 0, 0), ((33, self.height - 60), (x, 48)), 0)
 
 
