@@ -1,5 +1,5 @@
 import pygame
-from behaviors import stay, random, to_player, dist, die, attack, dialog, to_player_and_shoot
+from behaviors import stay, random, to_player, dist, die, attack, dialog, to_player_and_shoot, load_image
 from datetime import datetime as dt
 from datetime import timedelta
 
@@ -24,15 +24,22 @@ class Sprite(object):
         self.visible = visible
         self.parent = None
 
-    def __del__(self):
+    def delete(self):
+        flag = False
+        to_del = None
         if self.parent is not None:
             for name in self.parent.objects:
                 if not isinstance(self.parent.objects[name], Player):
                     for e in self.parent.objects[name]:
                         if e is self:
-                            del e
-                else:
-                    del self.parent.objects[name]
+                            to_del = (name, e)
+                            flag = True
+                            break
+                if flag:
+                    break
+        if to_del is not None:
+            self.parent.objects[to_del[0]].remove(to_del[1])
+        del self
 
     def set_pos(self, x: float, y: float):
         """
@@ -46,6 +53,9 @@ class Sprite(object):
     def get_pos(self):
         return self.coords
 
+    def set_visible(self, visible: bool):
+        self.visible = visible
+
     def update(self, event):
         """
             Обновляет данные об объекте и выполняет характерные объекту действия
@@ -58,7 +68,7 @@ class Sprite(object):
 class Entity(Sprite):
     def __init__(self, name, coords=(0, 0), visible=True, **kwargs):
         super().__init__(name, coords, False, visible, **kwargs)
-        img = pygame.image.load(rf"sprites/{name}/1.png")
+        img = load_image(rf"sprites/{name}/1.png", -1)
         self.sprite = pygame.transform.scale(img, (64, 64))
         self.state = 'stay'
         self.abilities = dict(kwargs)
@@ -71,6 +81,7 @@ class Entity(Sprite):
         cd = self.abilities['cooldown_attack'] if 'cooldown_attack' in self.abilities else 1
         self.cooldown_attack = timedelta(seconds=cd)
         self.current_cooldown_attack = dt.now()
+        self.is_alive = True
 
     def check_move(self, coords: tuple):
         if self.parent is not None:
@@ -83,7 +94,7 @@ class Entity(Sprite):
         return obj.collision_box(self.coords)
 
     def set_img(self, img: str):
-        img = pygame.image.load(rf"sprites/{self.name}/{img}.png")
+        img = load_image(rf"sprites/{self.name}/{img}.png", -1)
         self.sprite = pygame.transform.scale(img, (64, 64))
 
     def goto(self, x=None, y=None):
@@ -120,6 +131,7 @@ class Entity(Sprite):
         super().update(event)
         if self.health <= 0:
             self.death(self, event)
+            self.is_alive = False
 
 
 class Player(Entity):
@@ -140,7 +152,7 @@ class Player(Entity):
         if event is not None:
             if event.type == pygame.KEYDOWN:
                 symb = event.key
-                print(symb)
+                # print(symb)
                 self.events[symb] = True
             if event.type == pygame.KEYUP:
                 symb = event.key
@@ -184,6 +196,11 @@ class Player(Entity):
             self.set_img(f"{dt.now().microsecond // 1000 % 1000 // 334 + 1}")
         elif self.state == 'running':
             self.set_img(f"{dt.now().microsecond // 500 % 500 // 167 + 1}")
+        if any(self.inventory):
+            for e in self.inventory:
+                if e is not None:
+                    e.use(self.coords)
+                    break
 
 
 class Enemy(Entity):
@@ -194,6 +211,7 @@ class Enemy(Entity):
 
     def update(self, event):
         super().update(event)
+        # print(self.health)
         self.attack(self, event)
         self.behaviour(self, event)
         self.goto()

@@ -148,6 +148,13 @@ class PlayerUI(UI):
         super().update(event)
         x = self.width * 100 * self.player.health / 250 / self.player.max_health
         pygame.draw.rect(self.ui, (200, 0, 0), ((33, self.height - 60), (x, 48)), 0)
+        for k in range(1, 9):
+            pos = (32 * k, self.height - 120)
+            pygame.draw.rect(self.ui, (0, 100, 10), (pos, (32, 32)), 3)
+            item = self.player.inventory[k - 1]
+            if item is not None:
+                pos = pos[0] + self.player.coords[0] - self.width // 2, pos[1] + self.player.coords[1] - self.height // 2
+                item.set_pos(*pos)
 
 
 class Dialog(UI):

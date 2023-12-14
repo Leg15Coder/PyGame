@@ -89,6 +89,10 @@ class Scene(object):
             self.scene.fill(pygame.Color('black'))
             self.scene = pygame.transform.scale(self.scene, self.manager.size)
             for obj in self.objects['others']:
+                try:
+                    obj.update(event)
+                except Exception as ex:
+                    print(ex)
                 coords = obj.coords[0] - self.coords[0] + self.manager.width // 2, obj.coords[1] - self.coords[
                     1] + self.manager.height // 2
                 self.scene.blit(obj.sprite, coords)
@@ -98,12 +102,11 @@ class Scene(object):
                 self.scene.blit(obj.sprite, coords)
             for obj in self.objects['entities']:
                 obj.update(event)
-                if obj.health <= 0:
-                    del obj
-                else:
-                    coords = obj.coords[0] - self.coords[0] + self.manager.width // 2, obj.coords[1] - self.coords[
-                        1] + self.manager.height // 2
-                    self.scene.blit(obj.sprite, coords)
+                if not obj.is_alive:
+                    break
+                coords = obj.coords[0] - self.coords[0] + self.manager.width // 2, obj.coords[1] - self.coords[
+                    1] + self.manager.height // 2
+                self.scene.blit(obj.sprite, coords)
             if self.dialog is not None:
                 self.dialog.update(event)
             self.objects['player'].update(event)
