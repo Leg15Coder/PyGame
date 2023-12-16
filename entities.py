@@ -5,24 +5,16 @@ from datetime import timedelta
 
 
 class Sprite(object):
-    """
-        Общий родительский класс для всех объектов на сцене
-    """
     def __init__(self, name, coords=(0, 0), tangible=False, visible=True, **kwargs):
-        """
-        self.sprite: Холст, состоящий из картинки
-        self.parent: Сцена, в которой находится данный объект
-        :param name: Имя объекта (по имени добавляются картинка, анимации и индивидуальная механика)
-        :param coords: Координаты обекта относительно родительского холста
-        :param tangible: Является ли объект непроходимым, статичным
-        :param visible: Виден ли объект на экране
-        """
         self.name = name
         self.sprite = None
         self.coords = coords
         self.tangible = tangible
         self.visible = visible
         self.parent = None
+
+    def __del__(self):
+        self.delete()
 
     def delete(self):
         flag = False
@@ -42,12 +34,6 @@ class Sprite(object):
         del self
 
     def set_pos(self, x: float, y: float):
-        """
-            Устанавливает новые координаты объекта
-        :param x: Координата по длине экрана
-        :param y: Координата по высоте экрана
-        :return: None
-        """
         self.coords = (x, y)
 
     def get_pos(self):
@@ -57,11 +43,6 @@ class Sprite(object):
         self.visible = visible
 
     def update(self, event):
-        """
-            Обновляет данные об объекте и выполняет характерные объекту действия
-        :param event: Обрабатываемое игровое событие
-        :return: None
-        """
         pass
 
 
@@ -200,7 +181,12 @@ class Player(Entity):
             for e in self.inventory:
                 if e is not None:
                     e.use(self.coords)
-                    break
+
+    def delete(self):
+        for e in self.inventory:
+            if e is not None:
+                e.delete()
+        super().delete()
 
 
 class Enemy(Entity):
@@ -211,7 +197,6 @@ class Enemy(Entity):
 
     def update(self, event):
         super().update(event)
-        # print(self.health)
         self.attack(self, event)
         self.behaviour(self, event)
         self.goto()

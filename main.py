@@ -16,3 +16,4 @@ if __name__ == '__main__':
         manager.show(None)
         manager.clock.tick(FPS)
     pygame.quit()
+    sys.exit()

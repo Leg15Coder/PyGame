@@ -20,7 +20,7 @@ def dialog(this, event):
 
 def random(this, event):
     dialog(this, event)
-    this.goto(this.coords[0] + randint(-64, 64), this.coords[1] + randint(-64, 64))
+    this.goto(this.coords[0] + randint(-100, 100), this.coords[1] + randint(-100, 100))
 
 
 def to_player(this, event):

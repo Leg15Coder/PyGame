@@ -19,7 +19,7 @@ class Block(Sprite):
 
 
 class Wall(Block):
-    def __init__(self, name, coords=(0, 0, 0, 0), visible=True):
+    def __init__(self, name='block', coords=(0, 0, 0, 0), visible=True):
         x1, y1, x2, y2 = coords
         dx, dy = x2 - x1, y2 - y1
         if dx >= 0 and dy >= 0:
@@ -33,9 +33,10 @@ class Wall(Block):
         super().__init__(name, self.collision[0], True, visible)
         self.name = name
         self.index = 0
-        self.fill_background()
+        # self.fill_background()
 
     def __del__(self):
+        return
         remove(rf"sprites/blocks/{self.name}/{self.name}-{self.index}.png")
 
     def set_index(self):
