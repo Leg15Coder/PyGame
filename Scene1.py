@@ -7,10 +7,10 @@ import random
 
 manager = ScenesManager()
 
-ents = [NPC('npc', (random.randint(-10000, 10000), random.randint(-10000, 10000))) for _ in range(32)]
+ents = [NPC('npc', (random.randint(-1, 1000), random.randint(-1, 1000))) for _ in range(10)]
 blcks = [Wall('block', (random.randint(100, 2000), random.randint(100, 2000), random.randint(100, 2000), random.randint(100, 2000))) for _ in range(0)]
-enms = [Enemy('enemy', (random.randint(-10000, 10000), random.randint(-10000, 10000)), damage=2) for _ in range(32)]
-shts = [Shooter('shooter', (random.randint(-10000, 10000), random.randint(-10000, 10000)), damage=2) for _ in range(0)]
+enms = [Enemy('enemy', (random.randint(-1, 1000), random.randint(-1, 1000)), damage=2) for _ in range(10)]
+shts = [Shooter('shooter', (random.randint(-1, 1000), random.randint(-1, 1000)), damage=2) for _ in range(0)]
 scene = Scene('test', manager)
 scene.add_objects(*ents)
 scene.add_objects(*blcks)

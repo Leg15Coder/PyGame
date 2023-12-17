@@ -2,9 +2,7 @@ import os.path
 import sys
 from random import randint
 from datetime import datetime as dt
-
 import pygame.image
-
 from ui import Dialog
 
 

@@ -30,6 +30,10 @@ class UI(object):
         self.parent = scene
         self.ui = self.parent.scene
 
+    def clear(self):
+        self.ui.fill(pygame.Color('black'))
+        self.ui.set_alpha(100)
+
     def update(self, event):
         if self.parent is not None:
             self.ui = self.parent.scene
@@ -65,7 +69,7 @@ class MainMenu(Menu):
         super().update(event)
         self.scene = pygame.transform.scale(self.scene, self.manager.size)
         self.scene.fill(pygame.Color('black'))
-        size = width, height = self.manager.size
+        width, height = self.manager.size
         start_button_pos = (width // 3, height * 3 // 6)
         settings_button_pos = (width // 3, height * 4 // 6)
         quit_button_pos = (width // 3, height * 5 // 6)
@@ -112,7 +116,7 @@ class GameMenu(Menu):
         super().update(event)
         self.scene = pygame.transform.scale(self.scene, self.manager.size)
         self.scene.fill(pygame.Color('black'))
-        size = width, height = self.manager.size
+        width, height = self.manager.size
         continue_button_pos = (width // 3, height * 3 // 6)
         menu_button_pos = (width // 3, height * 4 // 6)
         wid_hei = (self.continue_button.get_width(), self.continue_button.get_height())
@@ -139,13 +143,9 @@ class PlayerUI(UI):
     def __init__(self, player):
         super().__init__(player.parent.manager)
         self.player = player
+        self.state = 'game'
 
-    def clear(self):
-        self.ui.fill(pygame.Color('black'))
-        self.ui.set_alpha(100)
-
-    def update(self, event):
-        super().update(event)
+    def show_game_ui(self):
         x = self.width * 100 * self.player.health / 250 / self.player.max_health
         pygame.draw.rect(self.ui, (200, 0, 0), ((33, self.height - 60), (x, 48)), 0)
         for k in range(1, 9):
@@ -153,8 +153,33 @@ class PlayerUI(UI):
             pygame.draw.rect(self.ui, (0, 100, 10), (pos, (32, 32)), 3)
             item = self.player.inventory[k - 1]
             if item is not None:
-                pos = pos[0] + self.player.coords[0] - self.width // 2, pos[1] + self.player.coords[1] - self.height // 2
+                item.sprite = pygame.transform.scale(item.sprite, (32, 32))
+                pos = pos[0] + self.player.coords[0] - self.width // 2, pos[1] + self.player.coords[
+                    1] - self.height // 2
                 item.set_pos(*pos)
+
+    def show_inventory(self):
+        for j in range(4):
+            for k in range(1, 9):
+                pos = (64 * k + self.width // 10, self.height // 8 + 64 * (j + 1))
+                pygame.draw.rect(self.ui, (0, 100, 10), (pos, (64, 64)), 3)
+                item = self.player.inventory[8 * j + k - 1]
+                if item is not None:
+                    item.sprite = pygame.transform.scale(item.sprite, (64, 64))
+                    pos = pos[0] + self.player.coords[0] - self.width // 2, pos[1] + self.player.coords[
+                        1] - self.height // 2
+                    item.set_pos(*pos)
+
+    def update(self, event):
+        super().update(event)
+        if event is not None:
+            if event.type == pygame.KEYDOWN:
+                if event.key == 101:
+                    self.state = 'inventory' if self.state == 'game' else 'game'
+        if self.state == 'game':
+            self.show_game_ui()
+        elif self.state == 'inventory':
+            self.show_inventory()
 
 
 class Dialog(UI):

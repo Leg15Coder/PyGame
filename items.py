@@ -20,7 +20,7 @@ class Item(Sprite):
         self.player = player
         self.slot = player.get_empty_slot()
         if 0 <= self.slot < 33:
-            self.sprite = pygame.transform.scale(self.sprite, (32, 32))
+            self.visible = False
             self.player.inventory[self.slot] = self
         else:
             self.slot = None
@@ -44,7 +44,8 @@ class Weapon(Item):
 
     def use(self, coords: tuple):
         if dt.now() - self.cooldown_attack > self.current_cooldown_attack:
-            enems = list(filter(lambda x: isinstance(x, Enemy) and dist(coords, x.coords) <= 100, self.parent.objects['entities']))
+            enems = list(filter(lambda x: isinstance(x, Enemy) and dist(coords, x.coords) <= 100,
+                                self.parent.objects['entities']))
             for enem in enems:
                 enem.health -= self.damage
             self.current_cooldown_attack = dt.now()

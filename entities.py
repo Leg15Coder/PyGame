@@ -1,7 +1,7 @@
 import pygame
 from behaviors import stay, random, to_player, dist, die, attack, dialog, to_player_and_shoot, load_image
 from datetime import datetime as dt
-from datetime import timedelta
+from datetime import timedelta as dl
 
 
 class Sprite(object):
@@ -60,7 +60,7 @@ class Entity(Sprite):
         self.damage = self.abilities['damage'] if 'damage' in self.abilities else 1
         self.death = self.abilities['death'] if 'death' in self.abilities else die
         cd = self.abilities['cooldown_attack'] if 'cooldown_attack' in self.abilities else 1
-        self.cooldown_attack = timedelta(seconds=cd)
+        self.cooldown_attack = dl(seconds=cd)
         self.current_cooldown_attack = dt.now()
         self.is_alive = True
 
@@ -133,7 +133,7 @@ class Player(Entity):
         if event is not None:
             if event.type == pygame.KEYDOWN:
                 symb = event.key
-                # print(symb)
+                print(symb)
                 self.events[symb] = True
             if event.type == pygame.KEYUP:
                 symb = event.key

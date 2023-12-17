@@ -3,6 +3,7 @@ from entities import Player, Entity
 from blocks import Block, Wall
 from ui import PlayerUI, MainMenu, GameMenu
 from behaviors import load_image
+from datetime import datetime as dt, timedelta as dl
 
 
 def iterable(obj):
@@ -16,7 +17,7 @@ class ScenesManager(object):
     def __init__(self, size=(800, 600), *args, **kwargs):
         pygame.init()
         self.size = self.width, self.height = size[0], size[1]
-        self.clock = pygame.time.Clock()
+        self.clock = dt.now()
         self.indexed_scenes = list(args)
         self.main_scenes = dict(kwargs)
         self.main_scenes['MainMenu'] = MainMenu(self)
@@ -54,7 +55,8 @@ class ScenesManager(object):
 
     def add_scene(self, *args, **kwargs):
         self.indexed_scenes += list(args)
-        # self.main_scenes |= dict(kwargs)
+        for name, val in kwargs:
+            self.main_scenes[name] = val
 
 
 class Scene(object):
@@ -65,6 +67,7 @@ class Scene(object):
             'wall': load_image(ERROR_IMAGE),
             'floor': load_image(ERROR_IMAGE)
         }
+        self.day_time = 'day'
         self.tile_width = self.tile_height = 32
         self.manager = manager
         if not iterable(objects):
@@ -107,7 +110,7 @@ class Scene(object):
                     self.set_tile_image('floor', (xk, yk))
                 elif data[y][x] == '#':
                     self.set_tile_image('wall', (xk, yk))
-                    self.add_objects(Wall(coords=(xk, yk, xk + self.tile_width, yk + self.tile_height)))
+                    self.add_objects(Wall(name='NONE', coords=(xk, yk, xk + self.tile_width, yk + self.tile_height)))
                 elif data[y][x] == 'P':
                     self.set_tile_image('floor', (xk, yk))
                     self.objects['player'] = Player((xk, yk), health=200)
@@ -130,13 +133,17 @@ class Scene(object):
 
     def update(self, event):
         if 'player' in self.objects and self.objects['player'] is not None:
-            self.scene.fill(pygame.Color('black'))
+            if dt.now() - self.manager.clock >= dl(minutes=5) * 2:
+                self.manager.clock = dt.now()
+            if dt.now() - self.manager.clock < dl(minutes=5):
+                self.scene.fill(pygame.Color('white'))
+                self.day_time = 'day'
+            else:
+                self.scene.fill(pygame.Color('black'))
+                self.day_time = 'night'
             self.scene = pygame.transform.scale(self.scene, self.manager.size)
-            self.scene.blit(self.static, (self.manager.width // 2 - self.coords[0], self.manager.height // 2 - self.coords[1]))
-            for obj in self.objects['stative']:
-                coords = obj.coords[0] - self.coords[0] + self.manager.width // 2, obj.coords[1] - self.coords[
-                    1] + self.manager.height // 2
-                # self.scene.blit(obj.sprite, coords)
+            self.scene.blit(self.static, (self.manager.width // 2 - self.coords[0],
+                                          self.manager.height // 2 - self.coords[1]))
             for obj in self.objects['entities']:
                 obj.update(event)
                 if not obj.is_alive:
