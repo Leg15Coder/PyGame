@@ -1,0 +1,231 @@
+import pygame
+from random import choice
+from functions import is_in_rectangle, load_image
+from db import db
+
+
+class UI(object):
+    def __init__(self, manager):
+        self.manager = manager
+        self.parent = None
+        self.size = self.width, self.height = 100, 100
+        self.ui = None
+
+    def set_parent(self, scene):
+        self.parent = scene
+        self.ui = self.parent.scene
+
+    def clear(self):
+        self.ui.fill(pygame.Color('black'))
+        self.ui.set_alpha(100)
+
+    def update(self, event):
+        if self.parent is not None:
+            self.ui = self.parent.scene
+            self.size = self.width, self.height = self.parent.scene.get_size()
+
+
+class Menu(UI):
+    pass
+
+
+class MainMenu(Menu):
+    def __init__(self, manager):
+        super().__init__(manager)
+        self.scene = pygame.Surface(manager.size)
+        font = pygame.font.SysFont('Impact', 50)
+        self.start_button = pygame.transform.scale(load_image('sprites/menu/start_button.png', -1), (300, 100))
+        self.settings_button = pygame.transform.scale(load_image('sprites/menu/start_button.png', -1), (300, 100))
+        self.quit_button = pygame.transform.scale(load_image('sprites/menu/start_button.png', -1), (300, 100))
+        self.start_button_text = font.render("ИГРАТЬ", True, (0, 0, 0))
+        font = pygame.font.SysFont('Impact', 43)
+        self.settings_button_text = font.render("НАСТРОЙКИ", True, (0, 0, 0))
+        font = pygame.font.SysFont('Impact', 50)
+        self.quit_button_text = font.render("ВЫЙТИ", True, (0, 0, 0))
+        self.main_background = load_image('sprites/menu/1.jpg')
+        self.icon = load_image('sprites/menu/icon.png', -1)
+
+    def start(self):
+        self.manager.state = 'game'
+
+    def settings(self):
+        pass
+
+    def quit(self):
+        pygame.quit()
+        del self
+
+    def update(self, event):
+        super().update(event)
+        self.scene = pygame.transform.scale(self.scene, self.manager.size)
+        self.scene.blit(self.main_background, (0, -500))
+        pygame.display.set_icon(self.icon)
+        width, height = self.manager.size
+        start_button_pos = (width // 3.33, height * 2 // 6)
+        start_button_text_pos = (width // 2.55, height * 2.15 // 6)
+        settings_button_pos = (width // 3.33, height * 3 // 6)
+        settings_button_text_pos = (width // 2.82, height * 3.2 // 6)
+        quit_button_pos = (width // 3.33, height * 4 // 6)
+        quit_button_text_pos = (width // 2.55, height * 4.17 // 6)
+        wid_hei = (self.settings_button.get_width(), self.settings_button.get_height())
+        self.scene.blit(self.start_button, start_button_pos)
+        self.scene.blit(self.start_button_text, start_button_text_pos)
+        self.scene.blit(self.settings_button, settings_button_pos)
+        self.scene.blit(self.settings_button_text, settings_button_text_pos)
+        self.scene.blit(self.quit_button, quit_button_pos)
+        self.scene.blit(self.quit_button_text, quit_button_text_pos)
+        if event is not None:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = event.pos
+                start_hv = (start_button_pos[0] + wid_hei[0], start_button_pos[1] + wid_hei[1])
+                setting_hv = (settings_button_pos[0] + wid_hei[0], settings_button_pos[1] + wid_hei[1])
+                quit_hv = (quit_button_pos[0] + wid_hei[0], quit_button_pos[1] + wid_hei[1])
+                if is_in_rectangle(pos, start_button_pos, start_hv):
+                    self.start()
+                elif is_in_rectangle(pos, settings_button_pos, setting_hv):
+                    self.settings()
+                elif is_in_rectangle(pos, quit_button_pos, quit_hv):
+                    self.quit()
+
+
+class GameMenu(Menu):
+    def __init__(self, manager):
+        super().__init__(manager)
+        self.scene = pygame.Surface(manager.size)
+        font = pygame.font.Font(None, 50)
+        self.continue_button = font.render("ВЕРНУТЬСЯ В ИГРУ", True, (100, 255, 100))
+        font = pygame.font.Font(None, 50)
+        self.menu_button = font.render("ГЛАВНОЕ МЕНЮ", True, (100, 255, 100))
+
+    def open(self):
+        self.manager.state = 'gamemenu'
+
+    def close(self):
+        self.manager.state = 'game'
+
+    def to_menu(self):
+        self.manager.state = 'mainmenu'
+
+    def update(self, event):
+        super().update(event)
+        self.scene = pygame.transform.scale(self.scene, self.manager.size)
+        self.scene.fill(pygame.Color('black'))
+        width, height = self.manager.size
+        continue_button_pos = (width // 3, height * 3 // 6)
+        menu_button_pos = (width // 3, height * 4 // 6)
+        wid_hei = (self.continue_button.get_width(), self.continue_button.get_height())
+        self.scene.blit(self.continue_button, continue_button_pos)
+        pygame.draw.rect(self.scene, (0, 255, 0), (*continue_button_pos, *wid_hei), 1)
+        self.scene.blit(self.menu_button, menu_button_pos)
+        pygame.draw.rect(self.scene, (0, 255, 0), (*menu_button_pos, *wid_hei), 1)
+        if event is not None:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = event.pos
+                continue_hv = (continue_button_pos[0] + wid_hei[0], continue_button_pos[1] + wid_hei[1])
+                menu_hv = (menu_button_pos[0] + wid_hei[0], menu_button_pos[1] + wid_hei[1])
+                if is_in_rectangle(pos, continue_button_pos, continue_hv):
+                    self.close()
+                elif is_in_rectangle(pos, menu_button_pos, menu_hv):
+                    self.to_menu()
+
+
+class Settings(Menu):
+    pass
+
+
+class PlayerUI(UI):
+    def __init__(self, player):
+        super().__init__(player.parent.manager)
+        self.player = player
+        self.state = 'game'
+
+    def show_game_ui(self):
+        x = self.width * 100 * self.player.health / 250 / self.player.max_health
+        pygame.draw.rect(self.ui, (200, 0, 0), ((33, self.height - 60), (x, 48)), 0)
+        for k in range(1, 9):
+            pos = (32 * k, self.height - 120)
+            pygame.draw.rect(self.ui, (0, 100, 10), (pos, (32, 32)), 3)
+            item = self.player.inventory[k - 1]
+            if item is not None:
+                item.sprite = pygame.transform.scale(item.sprite, (32, 32))
+                pos = pos[0] + self.player.coords[0] - self.width // 2, pos[1] + self.player.coords[
+                    1] - self.height // 2
+                item.set_pos(*pos)
+
+    def show_inventory(self):
+        for j in range(4):
+            for k in range(1, 9):
+                pos = (64 * k + self.width // 10, self.height // 8 + 64 * (j + 1))
+                pygame.draw.rect(self.ui, (0, 100, 10), (pos, (64, 64)), 3)
+                item = self.player.inventory[8 * j + k - 1]
+                if item is not None:
+                    item.sprite = pygame.transform.scale(item.sprite, (64, 64))
+                    pos = pos[0] + self.player.coords[0] - self.width // 2, pos[1] + self.player.coords[
+                        1] - self.height // 2
+                    item.set_pos(*pos)
+
+    def update(self, event):
+        super().update(event)
+        if event is not None:
+            if event.type == pygame.KEYDOWN:
+                if event.key == 101:
+                    self.state = 'inventory' if self.state == 'game' else 'game'
+        if self.state == 'game':
+            self.show_game_ui()
+        elif self.state == 'inventory':
+            self.show_inventory()
+
+
+class Dialog(UI):
+    def __init__(self, manager, dialog: int):
+        super().__init__(manager)
+        self.start = True
+        self.step = 0
+        self.script = db.get_dialog(dialog)
+        self.cur = None
+        self.text = str()
+        self.chooses = dict()
+        self.image = None
+        self.background = None
+        self.set_next()
+
+    def set_next(self, s=None):
+        if s is None:
+            cur = choice([x for x in self.script if x['start']])
+        else:
+            s = int(s)
+            cur = choice([x for x in self.script if x['id'] == s])
+        self.cur = cur['id']
+        self.text = cur['text']
+        steps = cur['next_step'].split(', ')
+        self.chooses = {ord(x.split(':')[0]): x.split(':')[1:] for x in steps}
+        self.step += 1
+
+    def quit(self):
+        self.start = False
+        self.parent.dialog = None
+        del self
+
+    def draw(self):
+        pygame.draw.rect(self.ui, (0, 0, 100), ((0, 0), (self.width, 100)), 0)
+        font = pygame.font.Font(None, 32)
+        text = font.render(self.text, True, (255, 100, 100))
+        self.ui.blit(text, (40, 20))
+        k = 0
+        for i in self.chooses:
+            font = pygame.font.Font(None, 24)
+            text = font.render(f'{chr(i)}: ' + self.chooses[i][1], True, (255, 100, 100))
+            self.ui.blit(text, (40, 100 + k))
+            k += 30
+
+    def update(self, event):
+        super().update(event)
+        self.draw()
+        if event is not None:
+            if event.type == pygame.KEYDOWN:
+                key = event.key
+                if key in self.chooses:
+                    if self.chooses[key][0] == '0':
+                        self.quit()
+                    else:
+                        self.set_next(self.chooses[key][0])
