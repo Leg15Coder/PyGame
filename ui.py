@@ -1,22 +1,7 @@
 import pygame
 from random import choice
-# from behaviors import is_in_rectangle
+from functions import is_in_rectangle, load_image
 from db import db
-
-
-def is_in_rectangle(coords: tuple, c1: tuple, c2: tuple):
-    x1, y1 = c1
-    x2, y2 = c2
-    dx, dy = x2 - x1, y2 - y1
-    if dx >= 0 and dy >= 0:
-        collision = ((x1, y1), (x2, y2))
-    elif dx < 0 and dy >= 0:
-        collision = ((x2, y2), (x1, y1))
-    elif dx >= 0 and dy < 0:
-        collision = ((x1, y1 + dy), (x2, y2 - dy))
-    else:
-        collision = ((x1 - dx, y1), (x2 + dx, y2))
-    return collision[0][0] <= coords[0] <= collision[1][0] and collision[0][1] <= coords[1] <= collision[1][1]
 
 
 class UI(object):
@@ -48,12 +33,17 @@ class MainMenu(Menu):
     def __init__(self, manager):
         super().__init__(manager)
         self.scene = pygame.Surface(manager.size)
-        font = pygame.font.Font(None, 50)
-        self.start_button = font.render("ИГРАТЬ", True, (100, 255, 100))
-        font = pygame.font.Font(None, 50)
-        self.settings_button = font.render("НАСТРОЙКИ", True, (100, 255, 100))
-        font = pygame.font.Font(None, 50)
-        self.quit_button = font.render("ВЫЙТИ", True, (100, 255, 100))
+        font = pygame.font.SysFont('Impact', 50)
+        self.start_button = pygame.transform.scale(load_image('sprites/menu/start_button.png', -1), (300, 100))
+        self.settings_button = pygame.transform.scale(load_image('sprites/menu/start_button.png', -1), (300, 100))
+        self.quit_button = pygame.transform.scale(load_image('sprites/menu/start_button.png', -1), (300, 100))
+        self.start_button_text = font.render("ИГРАТЬ", True, (0, 0, 0))
+        font = pygame.font.SysFont('Impact', 43)
+        self.settings_button_text = font.render("НАСТРОЙКИ", True, (0, 0, 0))
+        font = pygame.font.SysFont('Impact', 50)
+        self.quit_button_text = font.render("ВЫЙТИ", True, (0, 0, 0))
+        self.main_background = load_image('sprites/menu/1.jpg')
+        self.icon = load_image('sprites/menu/icon.png', -1)
 
     def start(self):
         self.manager.state = 'game'
@@ -68,18 +58,22 @@ class MainMenu(Menu):
     def update(self, event):
         super().update(event)
         self.scene = pygame.transform.scale(self.scene, self.manager.size)
-        self.scene.fill(pygame.Color('black'))
+        self.scene.blit(self.main_background, (0, -500))
+        pygame.display.set_icon(self.icon)
         width, height = self.manager.size
-        start_button_pos = (width // 3, height * 3 // 6)
-        settings_button_pos = (width // 3, height * 4 // 6)
-        quit_button_pos = (width // 3, height * 5 // 6)
+        start_button_pos = (width // 3.33, height * 2 // 6)
+        start_button_text_pos = (width // 2.55, height * 2.15 // 6)
+        settings_button_pos = (width // 3.33, height * 3 // 6)
+        settings_button_text_pos = (width // 2.82, height * 3.2 // 6)
+        quit_button_pos = (width // 3.33, height * 4 // 6)
+        quit_button_text_pos = (width // 2.55, height * 4.17 // 6)
         wid_hei = (self.settings_button.get_width(), self.settings_button.get_height())
         self.scene.blit(self.start_button, start_button_pos)
-        pygame.draw.rect(self.scene, (0, 255, 0), (*start_button_pos, *wid_hei), 1)
+        self.scene.blit(self.start_button_text, start_button_text_pos)
         self.scene.blit(self.settings_button, settings_button_pos)
-        pygame.draw.rect(self.scene, (0, 255, 0), (*settings_button_pos, *wid_hei), 1)
+        self.scene.blit(self.settings_button_text, settings_button_text_pos)
         self.scene.blit(self.quit_button, quit_button_pos)
-        pygame.draw.rect(self.scene, (0, 255, 0), (*quit_button_pos, *wid_hei), 1)
+        self.scene.blit(self.quit_button_text, quit_button_text_pos)
         if event is not None:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = event.pos

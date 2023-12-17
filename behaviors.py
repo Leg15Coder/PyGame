@@ -48,38 +48,9 @@ def attack(this, event):
             this.parent.objects['player'].health -= this.damage
 
 
-def is_in_rectangle(coords: tuple, c1: tuple, c2: tuple):
-    x1, y1 = c1
-    x2, y2 = c2
-    dx, dy = x2 - x1, y2 - y1
-    if dx >= 0 and dy >= 0:
-        collision = ((x1, y1), (x2, y2))
-    elif dx < 0 and dy < 0:
-        collision = ((x2, y2), (x1, y1))
-    elif dx >= 0 and dy < 0:
-        collision = ((x1, y2), (x2, y1))
-    else:
-        collision = ((x2, y1), (x1, y2))
-    return collision[0][0] <= coords[0] <= collision[1][0] and collision[0][1] <= coords[1] <= collision[1][1]
-
-
 def to_player_and_shoot(this, event):
     if 'player' in this.parent.objects:
         this.goto(*this.parent.objects['player'].coords)
         this.shoot(*this.parent.objects['player'].coords)
     else:
         stay(this, event)
-
-
-def load_image(name, colorkey=None):
-    if not os.path.isfile(name):
-        raise ImportError(f"Файл с названием {name} не найден")
-    image = pygame.image.load(name)
-    if colorkey is None:
-        image = image.convert_alpha()
-    else:
-        image = image.convert()
-        if colorkey == -1:
-            colorkey = image.get_at((0, 0))
-        image.set_colorkey(colorkey)
-    return image

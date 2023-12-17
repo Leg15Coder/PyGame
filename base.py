@@ -2,7 +2,7 @@ import pygame
 from entities import Player, Entity
 from blocks import Block, Wall
 from ui import PlayerUI, MainMenu, GameMenu
-from behaviors import load_image
+from functions import load_image
 from datetime import datetime as dt, timedelta as dl
 
 

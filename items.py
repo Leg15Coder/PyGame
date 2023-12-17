@@ -1,5 +1,6 @@
 from entities import Sprite, Enemy
-from behaviors import dist, load_image
+from behaviors import dist
+from functions import load_image
 import pygame
 from datetime import datetime as dt
 from datetime import timedelta

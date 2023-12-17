@@ -1,5 +1,6 @@
 import pygame
-from behaviors import stay, random, to_player, dist, die, attack, dialog, to_player_and_shoot, load_image
+from behaviors import stay, random, to_player, dist, die, attack, dialog, to_player_and_shoot
+from functions import load_image
 from datetime import datetime as dt
 from datetime import timedelta as dl
 
