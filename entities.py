@@ -77,7 +77,7 @@ class Shard(Sprite):
 class Entity(Sprite):
     def __init__(self, name, coords=(0, 0), visible=True, **kwargs):
         super().__init__(name, coords, False, visible, **kwargs)
-        img = load_image(rf"sprites/{name}/1.png", -1)
+        img = load_image(rf"sprites/{name}/1.png", -1, True)
         self.sprite = pygame.transform.scale(img, (64, 64))
         self.state = 'stay'
         self.abilities = dict(kwargs)

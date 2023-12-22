@@ -28,18 +28,21 @@ def focus(filename: str) -> None:
         for j in range(x):
             if pixels[j, i] != back:
                 mnx, mny, mxx, mxy = min(mnx, j), min(mny, i), max(mxx, j), max(mxy, i)
+    mxx = mxy = max(mxx, mxy)
     img = img.crop((mnx, mny, mxx + 1, mxy + 1))
-    img.save("res.png")
+    k = filename.rfind('.')
+    filename = filename[:k] + '-croped' + filename[k:]
+    img.save(filename)
 
 
-def load_image(name, colorkey=None, crop=False):
-    if not os.path.isfile(name):
-        raise ImportError(f"Файл с названием {name} не найден")
+def load_image(filename, colorkey=None, crop=False):
+    if not os.path.isfile(filename):
+        raise ImportError(f"Файл с названием {filename} не найден")
     if crop:
-        pass
-    else:
-        pass
-    image = pygame.image.load(name)
+        focus(filename)
+        k = filename.rfind('.')
+        filename = filename[:k] + '-croped' + filename[k:]
+    image = pygame.image.load(filename)
     if colorkey is None:
         try:
             image = image.convert_alpha()
@@ -53,4 +56,6 @@ def load_image(name, colorkey=None, crop=False):
         if colorkey == -1:
             colorkey = image.get_at((0, 0))
         image.set_colorkey(colorkey)
+    if crop:
+        os.remove(filename)
     return image
