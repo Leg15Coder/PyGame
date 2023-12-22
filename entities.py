@@ -47,6 +47,33 @@ class Sprite(object):
         pass
 
 
+class Shard(Sprite):
+    def __init__(self, parent, name, coords=(0, 0), moving=(0, 0)):
+        super().__init__(name, coords, False, True)
+        self.parent = parent
+        self.moving = moving
+        self.sprite = pygame.surface.Surface((8, 8))
+        pygame.draw.circle(self.sprite, (200, 10, 10), (4, 4), 4, 4)
+
+    def check_move(self, coords: tuple):
+        if self.parent is not None:
+            x, y = self.parent.objects['player'].coords
+            if dist((x + 32, y + 32), coords) <= 33:
+                self.parent.objects['player'].health -= 1
+                return False
+            for obj in self.parent.objects['stative']:
+                if obj.collision_box(coords):
+                    return False
+        return True
+
+    def update(self, event):
+        super().update(event)
+        pos = self.coords[0] + self.moving[0], self.coords[1] + self.moving[1]
+        self.set_pos(*pos)
+        if not self.check_move(self.coords):
+            self.delete()
+
+
 class Entity(Sprite):
     def __init__(self, name, coords=(0, 0), visible=True, **kwargs):
         super().__init__(name, coords, False, visible, **kwargs)
@@ -193,13 +220,12 @@ class Player(Entity):
 class Enemy(Entity):
     def __init__(self, name, coords=(0, 0), visible=True, **kwargs):
         super().__init__(name, coords, visible, **kwargs)
-        self.behaviour = to_player
         self.attack = self.abilities['attack'] if 'attack' in self.abilities else attack
+        self.shard = self.abilities['shard'] if 'shard' in self.abilities else Shard
 
     def update(self, event):
         super().update(event)
         self.attack(self, event)
-        self.behaviour(self, event)
         self.goto()
 
 
@@ -221,25 +247,3 @@ class NPC(Entity):
         if self.state != 'process':
             self.behaviour(self, event)
         self.goto()
-
-
-
-class Shooter(Entity):
-    def __init__(self, name, coords=(0, 0), visible=True, **kwargs):
-        super().__init__(name, coords, visible, **kwargs)
-        self.x_shooter_1 = coords[0]
-        self.y_shooter_1 = coords[1]
-        self.behaviour_shooter = to_player_and_shoot
-        self.attack = self.abilities['attack'] if 'attack' in self.abilities else attack
-
-    def shoot(self, x_player=None, y_player=None, x_shooter=None, y_shooter=None):
-        if x_player is not None and y_player is not None:
-            self.target_for_shooting = x_player, y_player
-            self.coords_shooter = x_shooter, y_shooter
-
-    def update(self, event):
-        super().update(event)
-        self.attack(self, event)
-        self.behaviour_shooter(self, event)
-        self.goto()
-        self.shoot(x_shooter=self.x_shooter_1, y_shooter=self.y_shooter_1)

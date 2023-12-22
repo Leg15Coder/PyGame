@@ -64,8 +64,8 @@ class Scene(object):
         self.scene = pygame.Surface(manager.size)
         self.name = name
         self.tile_images = {
-            'wall': load_image(ERROR_IMAGE),
-            'floor': load_image(ERROR_IMAGE)
+            'wall': tuple(load_image(f"sprites/blocks/walls/{i}.jpg") for i in range(4)),
+            'floor': load_image("sprites/blocks/floors/1.jpg")
         }
         self.day_time = 'day'
         self.tile_width = self.tile_height = 32
@@ -82,8 +82,9 @@ class Scene(object):
         self.ui = PlayerUI(self.objects['player'])
         self.ui.set_parent(self)
 
-    def set_tile_image(self, image: str, coords: tuple):
+    def set_tile_image(self, image: str, coords: tuple, **kwargs):
         image = self.tile_images[image]
+        image = image[kwargs['index']] if 'index' in kwargs else image
         image = pygame.transform.scale(image, (self.tile_width, self.tile_height))
         self.static.blit(image, coords)
 
@@ -109,7 +110,15 @@ class Scene(object):
                 if data[y][x] == '.':
                     self.set_tile_image('floor', (xk, yk))
                 elif data[y][x] == '#':
-                    self.set_tile_image('wall', (xk, yk))
+                    i = 0
+                    if data[y][x-1] == '#' and data[y][min(x+1, width-1)] == '#':
+                        i = 1
+                    if data[y-1][x] == '#' and data[min(height-1, y+1)][x] == '#':
+                        if i == 1:
+                            i = 3
+                        else:
+                            i = 2
+                    self.set_tile_image('wall', (xk, yk), index=i)
                     self.add_objects(Wall(name='NONE', coords=(xk, yk, xk + self.tile_width, yk + self.tile_height)))
                 elif data[y][x] == 'P':
                     self.set_tile_image('floor', (xk, yk))
@@ -151,14 +160,14 @@ class Scene(object):
                 coords = obj.coords[0] - self.coords[0] + self.manager.width // 2, obj.coords[1] - self.coords[
                     1] + self.manager.height // 2
                 self.scene.blit(obj.sprite, coords)
-            for obj in self.objects['others']:
-                try:
+            try:
+                for obj in self.objects['others']:
                     obj.update(event)
-                except Exception as ex:
-                    print(ex)
-                coords = obj.coords[0] - self.coords[0] + self.manager.width // 2, obj.coords[1] - self.coords[
-                    1] + self.manager.height // 2
-                self.scene.blit(obj.sprite, coords)
+                    coords = obj.coords[0] - self.coords[0] + self.manager.width // 2, obj.coords[1] - self.coords[
+                        1] + self.manager.height // 2
+                    self.scene.blit(obj.sprite, coords)
+            except:
+                pass
             if self.dialog is not None:
                 self.dialog.update(event)
             self.objects['player'].update(event)

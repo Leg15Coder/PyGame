@@ -41,6 +41,7 @@ def die(this, event):
 
 
 def attack(this, event):
+    to_player(this, event)
     if 'player' in this.parent.objects:
         if dt.now() - this.cooldown_attack > this.current_cooldown_attack \
                 and dist(this.coords, this.parent.objects['player'].coords) <= 32:
@@ -50,7 +51,22 @@ def attack(this, event):
 
 def to_player_and_shoot(this, event):
     if 'player' in this.parent.objects:
-        this.goto(*this.parent.objects['player'].coords)
-        this.shoot(*this.parent.objects['player'].coords)
+        pl_coords = this.parent.objects['player'].coords
+        r = dist(this.coords, pl_coords)
+        if dt.now() - this.cooldown_attack > this.current_cooldown_attack:
+            if r < 266:
+                x, y = pl_coords[0] - this.coords[0], pl_coords[1] - this.coords[1]
+                x, y = (x / (x ** 2 + y ** 2) ** 0.5) * 10, (y / (x ** 2 + y ** 2) ** 0.5) * 10
+                shard = this.shard(this.parent, 'shard', this.coords, (x, y))
+                this.parent.add_objects(shard)
+                print('HI')
+                this.current_cooldown_attack = dt.now()
+        if r > 300:
+            this.goto(*pl_coords)
+        elif r < 250:
+            pos = 2 * this.coords[0] - pl_coords[0], 2 * this.coords[1] - pl_coords[1]
+            this.goto(*pos)
+        else:
+            stay(this, event)
     else:
         stay(this, event)

@@ -1,5 +1,6 @@
 import os
 import pygame
+from PIL import Image
 
 
 def is_in_rectangle(coords: tuple, c1: tuple, c2: tuple):
@@ -17,9 +18,27 @@ def is_in_rectangle(coords: tuple, c1: tuple, c2: tuple):
     return collision[0][0] <= coords[0] <= collision[1][0] and collision[0][1] <= coords[1] <= collision[1][1]
 
 
-def load_image(name, colorkey=None):
+def focus(filename: str) -> None:
+    img = Image.open(filename)
+    x, y = img.size
+    pixels = img.load()
+    back = pixels[0, 0]
+    mnx, mny, mxx, mxy = x, y, 0, 0
+    for i in range(y):
+        for j in range(x):
+            if pixels[j, i] != back:
+                mnx, mny, mxx, mxy = min(mnx, j), min(mny, i), max(mxx, j), max(mxy, i)
+    img = img.crop((mnx, mny, mxx + 1, mxy + 1))
+    img.save("res.png")
+
+
+def load_image(name, colorkey=None, crop=False):
     if not os.path.isfile(name):
         raise ImportError(f"Файл с названием {name} не найден")
+    if crop:
+        pass
+    else:
+        pass
     image = pygame.image.load(name)
     if colorkey is None:
         try:
