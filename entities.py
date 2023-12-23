@@ -1,21 +1,37 @@
 import pygame
 from behaviors import stay, random, to_player, dist, die, attack, dialog, to_player_and_shoot
-from functions import load_image
+from functions import load_image, from_str_to_type
 from datetime import datetime as dt
 from datetime import timedelta as dl
+from ui import Dialog
 
 
 class Sprite(object):
-    def __init__(self, name, coords=(0, 0), tangible=False, visible=True, **kwargs):
+    def __init__(self, name='', coords=(0, 0), tangible=False, visible=True, **kwargs):
         self.name = name
+        self.abilities = dict(kwargs)
         self.sprite = None
-        self.coords = coords
-        self.tangible = tangible
-        self.visible = visible
+        self.coords = from_str_to_type(coords, tuple)
+        self.tangible = from_str_to_type(tangible, bool)
+        self.visible = from_str_to_type(visible, bool)
         self.parent = None
 
     def __del__(self):
         self.delete()
+
+    def save(self):
+        for name in self.abilities:
+            self.abilities[name] = eval(f"self.{name}")
+        self.abilities['name'] = self.name
+        self.abilities['sprite'] = self.sprite
+        self.abilities['coords'] = self.coords
+        self.abilities['tangible'] = self.tangible
+        self.abilities['visible'] = self.visible
+        return self
+
+    def add_ability(self, name: str, val, cls=None):
+        self.abilities[name] = from_str_to_type(val, cls)
+        return val
 
     def delete(self):
         flag = False
@@ -75,20 +91,25 @@ class Shard(Sprite):
 
 
 class Entity(Sprite):
-    def __init__(self, name, coords=(0, 0), visible=True, **kwargs):
-        super().__init__(name, coords, False, visible, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        name = kwargs['name'] if 'name' in kwargs else ''
         img = load_image(rf"sprites/{name}/1.png", -1, True)
         self.sprite = pygame.transform.scale(img, (64, 64))
-        self.state = 'stay'
-        self.abilities = dict(kwargs)
+        self.state = self.abilities['state'] if 'state' in self.abilities else self.add_ability('state', 'stay')
         self.target = None
-        self.speed = self.abilities['speed'] if 'speed' in self.abilities else 2
-        self.max_health = self.abilities['health'] if 'health' in self.abilities else 100
-        self.health = self.max_health
-        self.damage = self.abilities['damage'] if 'damage' in self.abilities else 1
-        self.death = self.abilities['death'] if 'death' in self.abilities else die
-        cd = self.abilities['cooldown_attack'] if 'cooldown_attack' in self.abilities else 1
-        self.cooldown_attack = dl(seconds=cd)
+        self.speed = from_str_to_type(self.abilities['speed']) if 'speed' in self.abilities \
+            else self.add_ability('speed', 2)
+        self.max_health = from_str_to_type(self.abilities['max_health']) if 'max_health' in self.abilities \
+            else self.add_ability('max_health', 100)
+        self.health = from_str_to_type(self.abilities['health']) if 'health' in self.abilities \
+            else self.add_ability('health', 100)
+        self.damage = from_str_to_type(self.abilities['damage']) if 'damage' in self.abilities \
+            else self.add_ability('damage', 0)
+        self.death = from_str_to_type(self.abilities['death']) if 'death' in self.abilities \
+            else self.add_ability('death', die)
+        self.cooldown_attack = from_str_to_type(self.abilities['cooldown_attack'], dl) \
+            if 'cooldown_attack' in self.abilities else self.add_ability('cooldown_attack', dl(seconds=1))
         self.current_cooldown_attack = dt.now()
         self.is_alive = True
 
@@ -144,14 +165,16 @@ class Entity(Sprite):
 
 
 class Player(Entity):
-    def __init__(self, coords=(0, 0), **kwargs):
-        super().__init__('player', coords, True, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.quests = set()
-        self.speed = 4
-        self.walk = 4
-        self.inventory = [None] * 33
-        self.run = 8
-        self.reputation = 0
+        self.walk = from_str_to_type(self.abilities['walk']) if 'walk' in self.abilities \
+            else self.add_ability('walk', 4)
+        self.inventory = from_str_to_type(self.abilities['inventory'], list) if 'inventory' in self.abilities \
+            else self.add_ability('inventory', [None] * 33)
+        self.run = from_str_to_type(self.abilities['run']) if 'run' in self.abilities else self.add_ability('run', 8)
+        self.reputation = from_str_to_type(self.abilities['reputation']) if 'reputation' in self.abilities \
+            else self.add_ability('reputation', 0)
         self.events = {119: False, 115: False, 97: False, 100: False, 1073742048: False}
 
     def get_empty_slot(self):
@@ -218,10 +241,14 @@ class Player(Entity):
 
 
 class Enemy(Entity):
-    def __init__(self, name, coords=(0, 0), visible=True, **kwargs):
-        super().__init__(name, coords, visible, **kwargs)
-        self.attack = self.abilities['attack'] if 'attack' in self.abilities else attack
-        self.shard = self.abilities['shard'] if 'shard' in self.abilities else Shard
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.attack = from_str_to_type(self.abilities['attack']) if 'attack' in self.abilities \
+            else self.add_ability('attack', attack)
+        self.shard = from_str_to_type(self.abilities['shard']) if 'shard' in self.abilities \
+            else self.add_ability('shard', Shard)
+        if isinstance(self.shard, str):
+            self.shard = eval(self.shard)
 
     def update(self, event):
         super().update(event)
@@ -238,9 +265,11 @@ class Ally(Entity):
 
 
 class NPC(Entity):
-    def __init__(self, name, coords=(0, 0), visible=True, **kwargs):
-        super().__init__(name, coords, visible, **kwargs)
-        self.behaviour = random
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.behaviour = from_str_to_type(self.abilities['behaviour']) if 'behaviour' in self.abilities \
+            else self.add_ability('behaviour', random)
+        self.dialog = Dialog
 
     def update(self, event):
         super().update(event)

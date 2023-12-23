@@ -1,6 +1,6 @@
 from entities import Sprite, Enemy
 from behaviors import dist
-from functions import load_image
+from functions import load_image, nothing
 import pygame
 from datetime import datetime as dt
 from datetime import timedelta
@@ -38,8 +38,9 @@ class Item(Sprite):
 class Weapon(Item):
     def __init__(self, name: str, coords=None, **kwargs):
         super().__init__(name, coords)
+        self.attack = kwargs['attack'] if 'attack' in kwargs else nothing
         self.damage = kwargs['damage'] if 'damage' in kwargs else 1
-        cd = self.abilities['cooldown_attack'] if 'cooldown_attack' in kwargs else 1
+        cd = kwargs['cooldown_attack'] if 'cooldown_attack' in kwargs else 1
         self.cooldown_attack = timedelta(seconds=cd)
         self.current_cooldown_attack = dt.now()
 

@@ -3,7 +3,6 @@ import sys
 from random import randint
 from datetime import datetime as dt
 import pygame.image
-from ui import Dialog
 
 
 def stay(this, event):
@@ -13,11 +12,11 @@ def stay(this, event):
 def dialog(this, event):
     if 'player' in this.parent.objects and dist(this.parent.objects['player'].coords, this.coords) <= 50:
         n = 2
-        this.parent.start_dialog(Dialog(this.parent.manager, randint(1, n)))
+        this.parent.start_dialog(event(this.parent.manager, randint(1, n)))
 
 
 def random(this, event):
-    dialog(this, event)
+    dialog(this, this.dialog)
     this.goto(this.coords[0] + randint(-100, 100), this.coords[1] + randint(-100, 100))
 
 
@@ -59,7 +58,6 @@ def to_player_and_shoot(this, event):
                 x, y = (x / (x ** 2 + y ** 2) ** 0.5) * 10, (y / (x ** 2 + y ** 2) ** 0.5) * 10
                 shard = this.shard(this.parent, 'shard', this.coords, (x, y))
                 this.parent.add_objects(shard)
-                print('HI')
                 this.current_cooldown_attack = dt.now()
         if r > 300:
             this.goto(*pl_coords)

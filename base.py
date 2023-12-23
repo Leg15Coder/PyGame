@@ -1,16 +1,13 @@
 import pygame
-from entities import Player, Entity
+from entities import Player, Entity, Enemy, NPC
 from blocks import Block, Wall
 from ui import PlayerUI, MainMenu, GameMenu
-from functions import load_image
+from functions import load_image, ERROR_IMAGE
 from datetime import datetime as dt, timedelta as dl
 
 
 def iterable(obj):
     return isinstance(obj, list) or isinstance(obj, tuple)
-
-
-ERROR_IMAGE = "sprites/err.jpg"
 
 
 class ScenesManager(object):
@@ -52,6 +49,61 @@ class ScenesManager(object):
             self.main_scenes['GameMenu'].update(event)
             self.main.blit(self.main_scenes['GameMenu'].scene, (0, 0))
         pygame.display.flip()
+
+    def load(self):
+        with open('data/last_game.txt', 'r') as f:
+            lst = tuple(map(str.strip, f.readlines()))
+            count = 0
+            _, n = lst[count].split()
+            count += 1
+            n = int(n)
+            for i in range(n):
+                __, index = lst[count].split()
+                index = int(index)
+                count += 1
+                self.add_scene(Scene('test', self))
+                names = ('PLAYER', 'ENTITIES')
+                while lst[count]:
+                    s = lst[count]
+                    count += 1
+                    if s in names:
+                        if s == names[0]:
+                            abilities = dict()
+                            while lst[count]:
+                                s1 = lst[count]
+                                name, val = s1.split(': ')
+                                count += 1
+                                abilities[name] = val
+                            abilities['inventory'] = [None] * 33
+                            player = Player(**abilities)
+                            self.indexed_scenes[index].add_objects(player)
+                        elif s == names[1]:
+                            ents = list()
+                            while lst[count]:
+                                ___, cls = lst[count].split()
+                                count += 1
+                                abilities = dict()
+                                while lst[count]:
+                                    s1 = lst[count]
+                                    name, val = s1.split(': ')
+                                    count += 1
+                                    abilities[name] = val
+                                count += 1
+                                ent = eval(f'{cls}(**abilities)')
+                                ents.append(ent)
+                            print(ents)
+                            self.indexed_scenes[index].add_objects(*ents)
+                        count += 1
+
+    def save(self):
+        with open('data/last_game.txt', 'w') as f:
+            f.write(f'COUNT {len(self.indexed_scenes)}\n')
+            count = 0
+            for scene in self.indexed_scenes:
+                f.write(f'SCENE {count}\n')
+                f.write(scene.save())
+                count += 1
+            f.write('\n')
 
     def add_scene(self, *args, **kwargs):
         self.indexed_scenes += list(args)
@@ -122,7 +174,7 @@ class Scene(object):
                     self.add_objects(Wall(name='NONE', coords=(xk, yk, xk + self.tile_width, yk + self.tile_height)))
                 elif data[y][x] == 'P':
                     self.set_tile_image('floor', (xk, yk))
-                    self.objects['player'] = Player((xk, yk), health=200)
+                    self.objects['player'] = Player(name='player', coords=(xk, yk), health=200)
                     self.objects['player'].parent = self
                     self.coords = self.objects['player'].coords
 
@@ -131,6 +183,9 @@ class Scene(object):
             obj.parent = self
             if obj.tangible:
                 self.objects['stative'].add(obj)
+            elif isinstance(obj, Player):
+                self.objects['player'] = obj
+                self.coords = self.objects['player'].coords
             elif isinstance(obj, Entity):
                 self.objects['entities'].add(obj)
             else:
@@ -139,6 +194,32 @@ class Scene(object):
     def start_dialog(self, dialog):
         self.dialog = dialog
         self.dialog.parent = self
+
+    def save(self) -> str:
+        result = str()
+        for name in self.objects:
+            if name == 'player':
+                self.objects[name].save()
+            else:
+                for e in self.objects[name]:
+                    e.save()
+        player = self.objects['player']
+        result += 'PLAYER\n'
+        for ability in player.abilities:
+            result += f'{ability}: {player.abilities[ability]}\n'
+        result += '\n'
+        result += 'ENTITIES\n'
+        count = 0
+        for ent in self.objects['entities']:
+            cls = str(ent.__class__).split("'")[1].split('.')[-1]
+            result += f'{count} {cls}\n'
+            for ability in ent.abilities:
+                result += f'{ability}: {ent.abilities[ability]}\n'
+            count += 1
+            result += '\n'
+        result += '\n'
+        result += '\n'
+        return result
 
     def update(self, event):
         if 'player' in self.objects and self.objects['player'] is not None:

@@ -1,7 +1,26 @@
 import pygame
 from random import choice
-from functions import is_in_rectangle, load_image
+from functions import is_in_rectangle, load_image, nothing, end
 from db import db
+
+
+class Button(object):
+    def __init__(self, parent: object, position: tuple, text: str, function=nothing):
+        self.parent = parent
+        self.coords = position[:2]
+        self.width, self.height = position[2:4]
+        self.function = function
+        self.font = pygame.font.SysFont('Impact', 50)
+        self.text = font.render(text, True, pygame.color.Color('black'))
+        self.image = pygame.transform.scale(load_image('sprites/menu/start_button.png', -1), (self.width, self.height))
+
+    def click(self, coords: tuple):
+        if is_in_rectangle(coords, self.coords, (self.coords[0] + self.width, self.coords[1] + self.height)):
+            self.function(event)
+
+    def show(self):
+        self.parent.scene.blit(self.text)
+        self.parent.scene.blit(self.image)
 
 
 class UI(object):
@@ -52,7 +71,7 @@ class MainMenu(Menu):
         pass
 
     def quit(self):
-        pygame.quit()
+        end(self.manager)
         del self
 
     def update(self, event):
@@ -151,6 +170,9 @@ class PlayerUI(UI):
                 pos = pos[0] + self.player.coords[0] - self.width // 2, pos[1] + self.player.coords[
                     1] - self.height // 2
                 item.set_pos(*pos)
+
+    def show_death(self):
+        pass
 
     def show_inventory(self):
         for j in range(4):

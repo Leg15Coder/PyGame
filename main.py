@@ -1,5 +1,5 @@
 import pygame
-import sys
+from functions import end
 from base import ScenesManager
 from Scene1 import manager
 
@@ -17,5 +17,4 @@ if __name__ == '__main__':
             clock.tick(FPS)
         manager.show(None)
         clock.tick(FPS)
-    pygame.quit()
-    sys.exit()
+    end(manager)
