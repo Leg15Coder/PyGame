@@ -7,20 +7,26 @@ from db import db
 class Button(object):
     def __init__(self, parent: object, position: tuple, text: str, function=nothing):
         self.parent = parent
-        self.coords = position[:2]
-        self.width, self.height = position[2:4]
+        self.coords = (0, 0)
+        self.position = position
+        self.width, self.height = 1, 1
         self.function = function
         self.font = pygame.font.SysFont('Impact', 50)
-        self.text = font.render(text, True, pygame.color.Color('black'))
+        self.text = self.font.render(text, True, pygame.color.Color('black'))
         self.image = pygame.transform.scale(load_image('sprites/menu/start_button.png', -1), (self.width, self.height))
 
     def click(self, coords: tuple):
         if is_in_rectangle(coords, self.coords, (self.coords[0] + self.width, self.coords[1] + self.height)):
-            self.function(event)
+            self.function()
 
     def show(self):
-        self.parent.scene.blit(self.text)
-        self.parent.scene.blit(self.image)
+        self.coords = self.position[0] * self.parent.width, self.position[1] * self.parent.height
+        self.width = self.parent.width // 3
+        self.height = self.width // 3
+        self.image = pygame.transform.scale(load_image('sprites/menu/start_button.png', -1), (self.width, self.height))
+        text_pos = self.coords[0] + self.width // 10, self.coords[1] + self.height // 10
+        self.parent.scene.blit(self.image, self.coords)
+        self.parent.scene.blit(self.text, text_pos)
 
 
 class UI(object):
@@ -41,7 +47,8 @@ class UI(object):
     def update(self, event):
         if self.parent is not None:
             self.ui = self.parent.scene
-            self.size = self.width, self.height = self.parent.scene.get_size()
+        if self.manager is not None:
+            self.size = self.width, self.height = self.manager.main.get_size()
 
 
 class Menu(UI):
@@ -52,17 +59,12 @@ class MainMenu(Menu):
     def __init__(self, manager):
         super().__init__(manager)
         self.scene = pygame.Surface(manager.size)
-        font = pygame.font.SysFont('Impact', 50)
-        self.start_button = pygame.transform.scale(load_image('sprites/menu/start_button.png', -1), (300, 100))
-        self.settings_button = pygame.transform.scale(load_image('sprites/menu/start_button.png', -1), (300, 100))
-        self.quit_button = pygame.transform.scale(load_image('sprites/menu/start_button.png', -1), (300, 100))
-        self.start_button_text = font.render("ИГРАТЬ", True, (0, 0, 0))
-        font = pygame.font.SysFont('Impact', 43)
-        self.settings_button_text = font.render("НАСТРОЙКИ", True, (0, 0, 0))
-        font = pygame.font.SysFont('Impact', 50)
-        self.quit_button_text = font.render("ВЫЙТИ", True, (0, 0, 0))
-        self.main_background = load_image('sprites/menu/1.jpg')
         self.icon = load_image('sprites/menu/icon.png', -1)
+        pygame.display.set_icon(self.icon)
+        self.start_button = Button(self, (1/3, 3/8), "ИГРАТЬ", function=self.start)
+        self.settings_button = Button(self, (1/3, 1/2), "НАСТРОЙКИ", function=self.settings)
+        self.quit_button = Button(self, (1/3, 5/8), "ВЫЙТИ", function=self.quit)
+        self.main_background = load_image('sprites/menu/1.jpg')
 
     def start(self):
         self.manager.state = 'game'
@@ -77,44 +79,28 @@ class MainMenu(Menu):
     def update(self, event):
         super().update(event)
         self.scene = pygame.transform.scale(self.scene, self.manager.size)
-        self.scene.blit(self.main_background, (0, -500))
-        pygame.display.set_icon(self.icon)
-        width, height = self.manager.size
-        start_button_pos = (width // 3.33, height * 2 // 6)
-        start_button_text_pos = (width // 2.55, height * 2.15 // 6)
-        settings_button_pos = (width // 3.33, height * 3 // 6)
-        settings_button_text_pos = (width // 2.82, height * 3.2 // 6)
-        quit_button_pos = (width // 3.33, height * 4 // 6)
-        quit_button_text_pos = (width // 2.55, height * 4.17 // 6)
-        wid_hei = (self.settings_button.get_width(), self.settings_button.get_height())
-        self.scene.blit(self.start_button, start_button_pos)
-        self.scene.blit(self.start_button_text, start_button_text_pos)
-        self.scene.blit(self.settings_button, settings_button_pos)
-        self.scene.blit(self.settings_button_text, settings_button_text_pos)
-        self.scene.blit(self.quit_button, quit_button_pos)
-        self.scene.blit(self.quit_button_text, quit_button_text_pos)
+        img = load_image('sprites/menu/1.jpg')
+        w, h = img.get_size()
+        h = self.width * h // w
+        self.main_background = pygame.transform.scale(img, (self.width, h))
+        self.scene.blit(self.main_background, (0, -h//3))
+        self.start_button.show()
+        self.settings_button.show()
+        self.quit_button.show()
         if event is not None:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = event.pos
-                start_hv = (start_button_pos[0] + wid_hei[0], start_button_pos[1] + wid_hei[1])
-                setting_hv = (settings_button_pos[0] + wid_hei[0], settings_button_pos[1] + wid_hei[1])
-                quit_hv = (quit_button_pos[0] + wid_hei[0], quit_button_pos[1] + wid_hei[1])
-                if is_in_rectangle(pos, start_button_pos, start_hv):
-                    self.start()
-                elif is_in_rectangle(pos, settings_button_pos, setting_hv):
-                    self.settings()
-                elif is_in_rectangle(pos, quit_button_pos, quit_hv):
-                    self.quit()
+                self.start_button.click(pos)
+                self.settings_button.click(pos)
+                self.quit_button.click(pos)
 
 
 class GameMenu(Menu):
     def __init__(self, manager):
         super().__init__(manager)
         self.scene = pygame.Surface(manager.size)
-        font = pygame.font.Font(None, 50)
-        self.continue_button = font.render("ВЕРНУТЬСЯ В ИГРУ", True, (100, 255, 100))
-        font = pygame.font.Font(None, 50)
-        self.menu_button = font.render("ГЛАВНОЕ МЕНЮ", True, (100, 255, 100))
+        self.continue_button = Button(self, (1/3, 1/3), "ВЕРНУТЬСЯ В ИГРУ", function=self.close)
+        self.menu_button = Button(self, (1/3, 2/3), "ГЛАВНОЕ МЕНЮ", function=self.to_menu)
 
     def open(self):
         self.manager.state = 'gamemenu'
@@ -128,24 +114,14 @@ class GameMenu(Menu):
     def update(self, event):
         super().update(event)
         self.scene = pygame.transform.scale(self.scene, self.manager.size)
-        self.scene.fill(pygame.Color('black'))
-        width, height = self.manager.size
-        continue_button_pos = (width // 3, height * 3 // 6)
-        menu_button_pos = (width // 3, height * 4 // 6)
-        wid_hei = (self.continue_button.get_width(), self.continue_button.get_height())
-        self.scene.blit(self.continue_button, continue_button_pos)
-        pygame.draw.rect(self.scene, (0, 255, 0), (*continue_button_pos, *wid_hei), 1)
-        self.scene.blit(self.menu_button, menu_button_pos)
-        pygame.draw.rect(self.scene, (0, 255, 0), (*menu_button_pos, *wid_hei), 1)
+        self.scene.fill(pygame.Color('white'))
+        self.menu_button.show()
+        self.continue_button.show()
         if event is not None:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = event.pos
-                continue_hv = (continue_button_pos[0] + wid_hei[0], continue_button_pos[1] + wid_hei[1])
-                menu_hv = (menu_button_pos[0] + wid_hei[0], menu_button_pos[1] + wid_hei[1])
-                if is_in_rectangle(pos, continue_button_pos, continue_hv):
-                    self.close()
-                elif is_in_rectangle(pos, menu_button_pos, menu_hv):
-                    self.to_menu()
+                self.menu_button.click(pos)
+                self.continue_button.click(pos)
 
 
 class Settings(Menu):
@@ -188,6 +164,8 @@ class PlayerUI(UI):
 
     def update(self, event):
         super().update(event)
+        if self.player.parent.objects['player'] != self.player:
+            self.player = self.player.parent.objects['player']
         if event is not None:
             if event.type == pygame.KEYDOWN:
                 if event.key == 101:

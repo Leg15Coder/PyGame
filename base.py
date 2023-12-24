@@ -8,7 +8,7 @@ from datetime import datetime as dt, timedelta as dl
 
 
 def iterable(obj):
-    return isinstance(obj, list) or isinstance(obj, tuple)
+    return isinstance(obj, list) or isinstance(obj, tuple) or isinstance(obj, set) or isinstance(obj, dict)
 
 
 class ScenesManager(object):
@@ -53,7 +53,6 @@ class ScenesManager(object):
 
     def load(self):
         global max_load, loading_progress
-        print('B')
         with open('data/last_game.txt', 'r') as f:
             lst = tuple(map(str.strip, f.readlines()))
             max_load = len(lst) - 1
@@ -75,7 +74,6 @@ class ScenesManager(object):
                     count += 1
                     loading_progress = count
                     if s in names:
-                        print(s)
                         if s == names[0]:
                             abilities = dict()
                             while lst[count]:
@@ -92,7 +90,6 @@ class ScenesManager(object):
                                 ___, cls = lst[count].split()
                                 count += 1
                                 abilities = dict()
-                                # print(loading_progress)
                                 while lst[count]:
                                     s1 = lst[count]
                                     name, val = s1.split(': ')

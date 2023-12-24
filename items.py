@@ -9,9 +9,8 @@ from datetime import timedelta as dl
 class Item(Sprite):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.player = self.abilities['player'] if 'player' in self.abilities else self.add_ability('player', None)
-        if isinstance(self.player, str) and self.parent is not None:
-            self.abilities('player', self.parent.objects['player'])
+        self.player = self.abilities['player'] if 'player' in self.abilities and self.abilities['player'] != 'None' \
+            else self.add_ability('player', None)
         self.slot = from_str_to_type(self.abilities['slot']) if 'slot' in self.abilities \
             else self.add_ability('slot', None)
         self.count = from_str_to_type(self.abilities['count'], int) if 'count' in self.abilities \
@@ -30,6 +29,10 @@ class Item(Sprite):
 
     def update(self, event):
         super().update(event)
+        if isinstance(self.player, str) and self.parent is not None:
+            self.add_ability('player', self.parent.objects['player'])
+            self.player = self.abilities['player']
+            self.player.inventory[self.slot] = self
         if self.player is None:
             objs = self.parent.objects
             if 'player' in objs:
