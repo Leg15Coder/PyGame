@@ -1,16 +1,14 @@
 import pygame
-from entities import Player, Entity
+from entities import *
+from items import *
 from blocks import Block, Wall
 from ui import PlayerUI, MainMenu, GameMenu
-from functions import load_image
+from functions import load_image, ERROR_IMAGE, loading_progress, max_load
 from datetime import datetime as dt, timedelta as dl
 
 
 def iterable(obj):
     return isinstance(obj, list) or isinstance(obj, tuple)
-
-
-ERROR_IMAGE = "sprites/err.jpg"
 
 
 class ScenesManager(object):
@@ -53,6 +51,75 @@ class ScenesManager(object):
             self.main.blit(self.main_scenes['GameMenu'].scene, (0, 0))
         pygame.display.flip()
 
+    def load(self):
+        global max_load, loading_progress
+        print('B')
+        with open('data/last_game.txt', 'r') as f:
+            lst = tuple(map(str.strip, f.readlines()))
+            max_load = len(lst) - 1
+            count = 0
+            loading_progress = count
+            _, n = lst[count].split()
+            count += 1
+            loading_progress = count
+            n = int(n)
+            for i in range(n):
+                __, index = lst[count].split()
+                index = int(index)
+                count += 1
+                loading_progress = count
+                self.add_scene(Scene('test', self))
+                names = ('PLAYER', 'ENTITIES', 'OTHERS')
+                while lst[count]:
+                    s, ____ = lst[count].split()
+                    count += 1
+                    loading_progress = count
+                    if s in names:
+                        print(s)
+                        if s == names[0]:
+                            abilities = dict()
+                            while lst[count]:
+                                s1 = lst[count]
+                                name, val = s1.split(': ')
+                                count += 1
+                                abilities[name] = val
+                            abilities['inventory'] = [None] * 33
+                            player = Player(**abilities)
+                            self.indexed_scenes[index].add_objects(player)
+                        else:
+                            ents = list()
+                            while lst[count]:
+                                ___, cls = lst[count].split()
+                                count += 1
+                                abilities = dict()
+                                # print(loading_progress)
+                                while lst[count]:
+                                    s1 = lst[count]
+                                    name, val = s1.split(': ')
+                                    count += 1
+                                    abilities[name] = val
+                                count += 1
+                                ent = eval(f'{cls}(**abilities)')
+                                ents.append(ent)
+                                loading_progress = count
+                            self.indexed_scenes[index].add_objects(*ents)
+                        count += 1
+            loading_progress = count
+
+    def save(self):
+        global max_load, loading_progress
+        max_load = 10
+        with open('data/last_game.txt', 'w') as f:
+            f.write(f'COUNT {len(self.indexed_scenes)}\n')
+            count = 0
+            for scene in self.indexed_scenes:
+                f.write(f'SCENE {count}\n')
+                f.write(scene.save())
+                count += 1
+                loading_progress = count
+            f.write('\n')
+        loading_progress += 10
+
     def add_scene(self, *args, **kwargs):
         self.indexed_scenes += list(args)
         for name, val in kwargs:
@@ -64,8 +131,8 @@ class Scene(object):
         self.scene = pygame.Surface(manager.size)
         self.name = name
         self.tile_images = {
-            'wall': load_image(ERROR_IMAGE),
-            'floor': load_image(ERROR_IMAGE)
+            'wall': tuple(load_image(f"sprites/blocks/walls/{i}.jpg") for i in range(4)),
+            'floor': load_image("sprites/blocks/floors/1.jpg")
         }
         self.day_time = 'day'
         self.tile_width = self.tile_height = 32
@@ -82,8 +149,9 @@ class Scene(object):
         self.ui = PlayerUI(self.objects['player'])
         self.ui.set_parent(self)
 
-    def set_tile_image(self, image: str, coords: tuple):
+    def set_tile_image(self, image: str, coords: tuple, **kwargs):
         image = self.tile_images[image]
+        image = image[kwargs['index']] if 'index' in kwargs else image
         image = pygame.transform.scale(image, (self.tile_width, self.tile_height))
         self.static.blit(image, coords)
 
@@ -109,11 +177,19 @@ class Scene(object):
                 if data[y][x] == '.':
                     self.set_tile_image('floor', (xk, yk))
                 elif data[y][x] == '#':
-                    self.set_tile_image('wall', (xk, yk))
+                    i = 0
+                    if data[y][x-1] == '#' and data[y][min(x+1, width-1)] == '#':
+                        i = 1
+                    if data[y-1][x] == '#' and data[min(height-1, y+1)][x] == '#':
+                        if i == 1:
+                            i = 3
+                        else:
+                            i = 2
+                    self.set_tile_image('wall', (xk, yk), index=i)
                     self.add_objects(Wall(name='NONE', coords=(xk, yk, xk + self.tile_width, yk + self.tile_height)))
                 elif data[y][x] == 'P':
                     self.set_tile_image('floor', (xk, yk))
-                    self.objects['player'] = Player((xk, yk), health=200)
+                    self.objects['player'] = Player(name='player', coords=(xk, yk), health=200)
                     self.objects['player'].parent = self
                     self.coords = self.objects['player'].coords
 
@@ -122,6 +198,9 @@ class Scene(object):
             obj.parent = self
             if obj.tangible:
                 self.objects['stative'].add(obj)
+            elif isinstance(obj, Player):
+                self.objects['player'] = obj
+                self.coords = self.objects['player'].coords
             elif isinstance(obj, Entity):
                 self.objects['entities'].add(obj)
             else:
@@ -130,6 +209,42 @@ class Scene(object):
     def start_dialog(self, dialog):
         self.dialog = dialog
         self.dialog.parent = self
+
+    def save(self) -> str:
+        result = str()
+        for name in self.objects:
+            if name == 'player':
+                self.objects[name].save()
+            else:
+                for e in self.objects[name]:
+                    e.save()
+        player = self.objects['player']
+        result += 'PLAYER 1\n'
+        for ability in player.abilities:
+            result += f'{ability}: {player.abilities[ability]}\n'
+        result += '\n'
+        result += f'ENTITIES {len(self.objects["entities"])}\n'
+        count = 0
+        for ent in self.objects['entities']:
+            cls = str(ent.__class__).split("'")[1].split('.')[-1]
+            result += f'{count} {cls}\n'
+            for ability in ent.abilities:
+                result += f'{ability}: {ent.abilities[ability]}\n'
+            count += 1
+            result += '\n'
+        result += '\n'
+        result += f'OTHERS {len(self.objects["others"])}\n'
+        count = 0
+        for ent in self.objects['others']:
+            cls = str(ent.__class__).split("'")[1].split('.')[-1]
+            result += f'{count} {cls}\n'
+            for ability in ent.abilities:
+                result += f'{ability}: {ent.abilities[ability]}\n'
+            count += 1
+            result += '\n'
+        result += '\n'
+        result += '\n'
+        return result
 
     def update(self, event):
         if 'player' in self.objects and self.objects['player'] is not None:
@@ -151,14 +266,14 @@ class Scene(object):
                 coords = obj.coords[0] - self.coords[0] + self.manager.width // 2, obj.coords[1] - self.coords[
                     1] + self.manager.height // 2
                 self.scene.blit(obj.sprite, coords)
-            for obj in self.objects['others']:
-                try:
+            try:
+                for obj in self.objects['others']:
                     obj.update(event)
-                except Exception as ex:
-                    print(ex)
-                coords = obj.coords[0] - self.coords[0] + self.manager.width // 2, obj.coords[1] - self.coords[
-                    1] + self.manager.height // 2
-                self.scene.blit(obj.sprite, coords)
+                    coords = obj.coords[0] - self.coords[0] + self.manager.width // 2, obj.coords[1] - self.coords[
+                        1] + self.manager.height // 2
+                    self.scene.blit(obj.sprite, coords)
+            except:
+                pass
             if self.dialog is not None:
                 self.dialog.update(event)
             self.objects['player'].update(event)
