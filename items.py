@@ -1,20 +1,22 @@
 from entities import Sprite, Enemy
 from behaviors import dist
-from functions import load_image, nothing
+from functions import load_image, nothing, from_str_to_type
 import pygame
 from datetime import datetime as dt
-from datetime import timedelta
+from datetime import timedelta as dl
 
 
 class Item(Sprite):
-    def __init__(self, name: str, coords=None):
-        super().__init__(name, coords, False, True)
-        self.coords = coords
-        self.player = None
-        self.slot = None
-        self.count = 1
-        self.name = name
-        img = load_image(rf"sprites/items/{name}/1.jpg")
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.player = self.abilities['player'] if 'player' in self.abilities else self.add_ability('player', None)
+        if isinstance(self.player, str) and self.parent is not None:
+            self.abilities('player', self.parent.objects['player'])
+        self.slot = from_str_to_type(self.abilities['slot']) if 'slot' in self.abilities \
+            else self.add_ability('slot', None)
+        self.count = from_str_to_type(self.abilities['count'], int) if 'count' in self.abilities \
+            else self.add_ability('count', 1)
+        img = load_image(rf"sprites/items/{self.name}/1.jpg")
         self.sprite = pygame.transform.scale(img, (24, 24))
 
     def pick(self, player):
@@ -36,12 +38,14 @@ class Item(Sprite):
 
 
 class Weapon(Item):
-    def __init__(self, name: str, coords=None, **kwargs):
-        super().__init__(name, coords)
-        self.attack = kwargs['attack'] if 'attack' in kwargs else nothing
-        self.damage = kwargs['damage'] if 'damage' in kwargs else 1
-        cd = kwargs['cooldown_attack'] if 'cooldown_attack' in kwargs else 1
-        self.cooldown_attack = timedelta(seconds=cd)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.attack = from_str_to_type(self.abilities['attack']) if 'attack' in self.abilities \
+            else self.add_ability('attack', nothing)
+        self.damage = from_str_to_type(self.abilities['damage']) if 'damage' in self.abilities \
+            else self.add_ability('damage', 1)
+        self.cooldown_attack = from_str_to_type(self.abilities['cooldown_attack'], dl) \
+            if 'cooldown_attack' in self.abilities else self.add_ability('cooldown_attack', dl(seconds=1))
         self.current_cooldown_attack = dt.now()
 
     def use(self, coords: tuple):

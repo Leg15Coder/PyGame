@@ -14,7 +14,7 @@ class Sprite(object):
         self.coords = from_str_to_type(coords, tuple)
         self.tangible = from_str_to_type(tangible, bool)
         self.visible = from_str_to_type(visible, bool)
-        self.parent = None
+        self.parent = self.abilities['parent'] if 'parent' in self.abilities else None
 
     def __del__(self):
         self.delete()
@@ -64,10 +64,10 @@ class Sprite(object):
 
 
 class Shard(Sprite):
-    def __init__(self, parent, name, coords=(0, 0), moving=(0, 0)):
-        super().__init__(name, coords, False, True)
-        self.parent = parent
-        self.moving = moving
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.moving = from_str_to_type(self.abilities['moving'], tuple) if 'moving' in self.abilities \
+            else self.add_ability('moving', (0, 0))
         self.sprite = pygame.surface.Surface((8, 8))
         pygame.draw.circle(self.sprite, (200, 10, 10), (4, 4), 4, 4)
 

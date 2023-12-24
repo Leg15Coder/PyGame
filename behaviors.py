@@ -56,7 +56,8 @@ def to_player_and_shoot(this, event):
             if r < 266:
                 x, y = pl_coords[0] - this.coords[0] + 32, pl_coords[1] - this.coords[1] + 32
                 x, y = (x / (x ** 2 + y ** 2) ** 0.5) * 10, (y / (x ** 2 + y ** 2) ** 0.5) * 10
-                shard = this.shard(this.parent, 'shard', this.coords, (x, y))
+                shard = this.shard(name='shard', coords=this.coords, moving=(x, y))
+                shard.parent = this.parent
                 this.parent.add_objects(shard)
                 this.current_cooldown_attack = dt.now()
         if r > 300:

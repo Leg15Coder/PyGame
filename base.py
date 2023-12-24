@@ -1,8 +1,9 @@
 import pygame
-from entities import Player, Entity, Enemy, NPC
+from entities import *
+from items import *
 from blocks import Block, Wall
 from ui import PlayerUI, MainMenu, GameMenu
-from functions import load_image, ERROR_IMAGE
+from functions import load_image, ERROR_IMAGE, loading_progress, max_load
 from datetime import datetime as dt, timedelta as dl
 
 
@@ -51,22 +52,30 @@ class ScenesManager(object):
         pygame.display.flip()
 
     def load(self):
+        global max_load, loading_progress
+        print('B')
         with open('data/last_game.txt', 'r') as f:
             lst = tuple(map(str.strip, f.readlines()))
+            max_load = len(lst) - 1
             count = 0
+            loading_progress = count
             _, n = lst[count].split()
             count += 1
+            loading_progress = count
             n = int(n)
             for i in range(n):
                 __, index = lst[count].split()
                 index = int(index)
                 count += 1
+                loading_progress = count
                 self.add_scene(Scene('test', self))
-                names = ('PLAYER', 'ENTITIES')
+                names = ('PLAYER', 'ENTITIES', 'OTHERS')
                 while lst[count]:
-                    s = lst[count]
+                    s, ____ = lst[count].split()
                     count += 1
+                    loading_progress = count
                     if s in names:
+                        print(s)
                         if s == names[0]:
                             abilities = dict()
                             while lst[count]:
@@ -77,12 +86,13 @@ class ScenesManager(object):
                             abilities['inventory'] = [None] * 33
                             player = Player(**abilities)
                             self.indexed_scenes[index].add_objects(player)
-                        elif s == names[1]:
+                        else:
                             ents = list()
                             while lst[count]:
                                 ___, cls = lst[count].split()
                                 count += 1
                                 abilities = dict()
+                                # print(loading_progress)
                                 while lst[count]:
                                     s1 = lst[count]
                                     name, val = s1.split(': ')
@@ -91,11 +101,14 @@ class ScenesManager(object):
                                 count += 1
                                 ent = eval(f'{cls}(**abilities)')
                                 ents.append(ent)
-                            print(ents)
+                                loading_progress = count
                             self.indexed_scenes[index].add_objects(*ents)
                         count += 1
+            loading_progress = count
 
     def save(self):
+        global max_load, loading_progress
+        max_load = 10
         with open('data/last_game.txt', 'w') as f:
             f.write(f'COUNT {len(self.indexed_scenes)}\n')
             count = 0
@@ -103,7 +116,9 @@ class ScenesManager(object):
                 f.write(f'SCENE {count}\n')
                 f.write(scene.save())
                 count += 1
+                loading_progress = count
             f.write('\n')
+        loading_progress += 10
 
     def add_scene(self, *args, **kwargs):
         self.indexed_scenes += list(args)
@@ -204,13 +219,23 @@ class Scene(object):
                 for e in self.objects[name]:
                     e.save()
         player = self.objects['player']
-        result += 'PLAYER\n'
+        result += 'PLAYER 1\n'
         for ability in player.abilities:
             result += f'{ability}: {player.abilities[ability]}\n'
         result += '\n'
-        result += 'ENTITIES\n'
+        result += f'ENTITIES {len(self.objects["entities"])}\n'
         count = 0
         for ent in self.objects['entities']:
+            cls = str(ent.__class__).split("'")[1].split('.')[-1]
+            result += f'{count} {cls}\n'
+            for ability in ent.abilities:
+                result += f'{ability}: {ent.abilities[ability]}\n'
+            count += 1
+            result += '\n'
+        result += '\n'
+        result += f'OTHERS {len(self.objects["others"])}\n'
+        count = 0
+        for ent in self.objects['others']:
             cls = str(ent.__class__).split("'")[1].split('.')[-1]
             result += f'{count} {cls}\n'
             for ability in ent.abilities:

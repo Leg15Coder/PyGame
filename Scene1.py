@@ -16,7 +16,7 @@ if False:
     scene.add_objects(*ents)
     scene.add_objects(*enms)
     scene.add_objects(*shts)
-    scene.add_objects(Weapon('sword', (500, 400), damage=8), Weapon('bow', (800, 600)))
+    scene.add_objects(Weapon(name='sword', coords=(500, 400), damage=8), Weapon(name='bow', coords=(800, 600)))
     manager.add_scene(scene)
 else:
     manager.load()

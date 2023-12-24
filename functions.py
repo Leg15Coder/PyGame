@@ -1,19 +1,43 @@
 import os
 import sys
 import pygame
+from threading import Thread
 from PIL import Image
 from datetime import timedelta as dl
 from behaviors import *
 
 
 ERROR_IMAGE = "sprites/err.jpg"
+loading_finished, loading_progress, max_load = False, 0, 100
 
 
 def nothing(*args, **kwargs) -> None:
     pass
 
 
+def fill_bar(manager):
+    global loading_finished, loading_progress, max_load
+    scene = pygame.surface.Surface(manager.size)
+    while not loading_finished:
+        if max_load <= loading_progress:
+            loading_finished = True
+        w, h = manager.size
+        pr = 6 * w * loading_progress // 8 // max_load
+        pygame.draw.rect(scene, (130, 60, 1), (w // 8, h // 3, pr, h // 8), 0)
+        manager.main.blit(scene, (0, 0))
+    loading_progress, loading_finished = 0, False
+
+
+def start(cls):
+    manager = cls()
+    # Thread(target=lambda: fill_bar(manager)).start()
+    # print('A')
+    manager.load()
+    return True, pygame.time.Clock(), manager
+
+
 def end(manager) -> None:
+    Thread(target=lambda: fill_bar(manager)).start()
     manager.save()
     pygame.quit()
     sys.exit()
@@ -23,7 +47,7 @@ def from_str_to_type(val, cls=None):
     if not isinstance(val, str):
         return val
     if cls in (str, int, float):
-        cls = str(cls)[1:-1].split()[1]
+        cls = str(cls)[1:-1].replace("'", '').split()[1]
         return eval(f'{cls}({val})')
     elif cls is dl:
         h, m, s = map(int, val.split(':'))

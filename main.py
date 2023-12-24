@@ -1,14 +1,12 @@
 import pygame
-from functions import end
+from functions import end, start
 from base import ScenesManager
-from Scene1 import manager
 
 FPS = 60
 
 
 if __name__ == '__main__':
-    running = True
-    clock = pygame.time.Clock()
+    running, clock, manager = start(ScenesManager)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
