@@ -1,0 +1,410 @@
+COUNT 1
+SCENE 0
+PLAYER 1
+health: 119
+state: stay
+speed: 4
+max_health: 100
+damage: 0
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+walk: 4
+inventory: [<items.Weapon object at 0x0000015C6006D460>, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+run: 8
+reputation: 0
+sprite: <Surface(64x64x32 SW)>
+name: player
+coords: (6396, 210)
+tangible: False
+visible: True
+
+ENTITIES 23
+0 Enemy
+damage: 2
+attack: <function to_player_and_shoot at 0x0000015C5DB55040>
+state: stay
+speed: 2
+max_health: 100
+health: 100
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+shard: <class 'entities.Shard'>
+sprite: <Surface(64x64x32 SW)>
+name: shooter
+coords: (2014, 210)
+tangible: False
+visible: True
+
+1 Enemy
+damage: 2
+state: stay
+speed: 2
+max_health: 100
+health: 99
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+attack: <function attack at 0x0000015C5DB5CF70>
+shard: <class 'entities.Shard'>
+sprite: <Surface(64x64x32 SW)>
+name: enemy
+coords: (2014, 210)
+tangible: False
+visible: True
+
+2 Enemy
+damage: 2
+state: process
+speed: 2
+max_health: 100
+health: 99
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+attack: <function attack at 0x0000015C5DB5CF70>
+shard: <class 'entities.Shard'>
+sprite: <Surface(64x64x32 SW)>
+name: enemy
+coords: (6396, 546)
+tangible: False
+visible: True
+
+3 NPC
+state: process
+speed: 2
+max_health: 100
+health: 100
+damage: 0
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+behaviour: <function random at 0x0000015C5DB5CCA0>
+sprite: <Surface(64x64x32 SW)>
+name: npc
+coords: (577, 447)
+tangible: False
+visible: True
+
+4 Enemy
+damage: 2
+state: stay
+speed: 2
+max_health: 100
+health: 100
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+attack: <function attack at 0x0000015C5DB5CF70>
+shard: <class 'entities.Shard'>
+sprite: <Surface(64x64x32 SW)>
+name: enemy
+coords: (2014, 210)
+tangible: False
+visible: True
+
+5 Enemy
+damage: 2
+state: stay
+speed: 2
+max_health: 100
+health: 100
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+attack: <function attack at 0x0000015C5DB5CF70>
+shard: <class 'entities.Shard'>
+sprite: <Surface(64x64x32 SW)>
+name: enemy
+coords: (323, 478)
+tangible: False
+visible: True
+
+6 Enemy
+damage: 2
+state: stay
+speed: 2
+max_health: 100
+health: 100
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+attack: <function attack at 0x0000015C5DB5CF70>
+shard: <class 'entities.Shard'>
+sprite: <Surface(64x64x32 SW)>
+name: enemy
+coords: (2014, 210)
+tangible: False
+visible: True
+
+7 Enemy
+damage: 2
+attack: <function to_player_and_shoot at 0x0000015C5DB55040>
+state: stay
+speed: 2
+max_health: 100
+health: 100
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+shard: <class 'entities.Shard'>
+sprite: <Surface(64x64x32 SW)>
+name: shooter
+coords: (2014, 210)
+tangible: False
+visible: True
+
+8 Enemy
+damage: 2
+attack: <function to_player_and_shoot at 0x0000015C5DB55040>
+state: stay
+speed: 2
+max_health: 100
+health: 100
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+shard: <class 'entities.Shard'>
+sprite: <Surface(64x64x32 SW)>
+name: shooter
+coords: (2014, 210)
+tangible: False
+visible: True
+
+9 NPC
+state: process
+speed: 2
+max_health: 100
+health: 100
+damage: 0
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+behaviour: <function random at 0x0000015C5DB5CCA0>
+sprite: <Surface(64x64x32 SW)>
+name: npc
+coords: (119, 447)
+tangible: False
+visible: True
+
+10 NPC
+state: process
+speed: 2
+max_health: 100
+health: 100
+damage: 0
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+behaviour: <function random at 0x0000015C5DB5CCA0>
+sprite: <Surface(64x64x32 SW)>
+name: npc
+coords: (930, 34)
+tangible: False
+visible: True
+
+11 Enemy
+damage: 2
+attack: <function to_player_and_shoot at 0x0000015C5DB55040>
+state: stay
+speed: 2
+max_health: 100
+health: 100
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+shard: <class 'entities.Shard'>
+sprite: <Surface(64x64x32 SW)>
+name: shooter
+coords: (2014, 210)
+tangible: False
+visible: True
+
+12 NPC
+state: process
+speed: 2
+max_health: 100
+health: 100
+damage: 0
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+behaviour: <function random at 0x0000015C5DB5CCA0>
+sprite: <Surface(64x64x32 SW)>
+name: npc
+coords: (1036, 1503)
+tangible: False
+visible: True
+
+13 Enemy
+damage: 2
+state: stay
+speed: 2
+max_health: 100
+health: 100
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+attack: <function attack at 0x0000015C5DB5CF70>
+shard: <class 'entities.Shard'>
+sprite: <Surface(64x64x32 SW)>
+name: enemy
+coords: (898, 834)
+tangible: False
+visible: True
+
+14 NPC
+state: stay
+speed: 2
+max_health: 100
+health: 100
+damage: 0
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+behaviour: <function random at 0x0000015C5DB5CCA0>
+sprite: <Surface(64x64x32 SW)>
+name: npc
+coords: (99, 481)
+tangible: False
+visible: True
+
+15 NPC
+state: process
+speed: 2
+max_health: 100
+health: 100
+damage: 0
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+behaviour: <function random at 0x0000015C5DB5CCA0>
+sprite: <Surface(64x64x32 SW)>
+name: npc
+coords: (283, 33)
+tangible: False
+visible: True
+
+16 Enemy
+damage: 2
+state: stay
+speed: 2
+max_health: 100
+health: 99
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+attack: <function attack at 0x0000015C5DB5CF70>
+shard: <class 'entities.Shard'>
+sprite: <Surface(64x64x32 SW)>
+name: enemy
+coords: (2014, 210)
+tangible: False
+visible: True
+
+17 Enemy
+damage: 2
+attack: <function to_player_and_shoot at 0x0000015C5DB55040>
+state: stay
+speed: 2
+max_health: 100
+health: 100
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+shard: <class 'entities.Shard'>
+sprite: <Surface(64x64x32 SW)>
+name: shooter
+coords: (2014, 210)
+tangible: False
+visible: True
+
+18 Enemy
+damage: 2
+state: process
+speed: 2
+max_health: 100
+health: 99
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+attack: <function attack at 0x0000015C5DB5CF70>
+shard: <class 'entities.Shard'>
+sprite: <Surface(64x64x32 SW)>
+name: enemy
+coords: (6396, 546)
+tangible: False
+visible: True
+
+19 NPC
+state: process
+speed: 2
+max_health: 100
+health: 100
+damage: 0
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+behaviour: <function random at 0x0000015C5DB5CCA0>
+sprite: <Surface(64x64x32 SW)>
+name: npc
+coords: (423, 447)
+tangible: False
+visible: True
+
+20 NPC
+state: process
+speed: 2
+max_health: 100
+health: 100
+damage: 0
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+behaviour: <function random at 0x0000015C5DB5CCA0>
+sprite: <Surface(64x64x32 SW)>
+name: npc
+coords: (948, 546)
+tangible: False
+visible: True
+
+21 NPC
+state: process
+speed: 2
+max_health: 100
+health: 100
+damage: 0
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+behaviour: <function random at 0x0000015C5DB5CCA0>
+sprite: <Surface(64x64x32 SW)>
+name: npc
+coords: (606, 830)
+tangible: False
+visible: True
+
+22 NPC
+state: process
+speed: 2
+max_health: 100
+health: 100
+damage: 0
+death: <function die at 0x0000015C5DB5CEE0>
+cooldown_attack: 0:00:01
+behaviour: <function random at 0x0000015C5DB5CCA0>
+sprite: <Surface(64x64x32 SW)>
+name: npc
+coords: (1335, 698)
+tangible: False
+visible: True
+
+
+OTHERS 2
+0 Weapon
+damage: 8
+player: None
+slot: None
+attack: <function nothing at 0x0000015C5CEABF70>
+cooldown_attack: 0:00:01
+sprite: <Surface(24x24x32 SW)>
+count: 1
+name: sword
+coords: (500, 400)
+tangible: False
+visible: True
+
+1 Weapon
+player: <entities.Player object at 0x0000015C5DF40460>
+slot: 0
+attack: <function nothing at 0x0000015C5CEABF70>
+damage: 1
+cooldown_attack: 0:00:01
+sprite: <Surface(32x32x32 SW)>
+count: 1
+name: bow
+coords: (6028, 390)
+tangible: False
+visible: False
+
+
+
+
